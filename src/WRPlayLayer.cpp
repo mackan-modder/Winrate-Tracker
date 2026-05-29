@@ -36,14 +36,6 @@ class $modify(WRPlayLayer, PlayLayer){
 		PlayLayer::resetLevel();
 
 		m_fields->startingPercentage = getCurrentPercentInt();
-
-		// geode::log::info("------------------------------");
-
-		// geode::log::info("------------------------------");
-		// for(int i=0;i<100;i++){
-		// 	geode::log::info("{}",m_fields->percentageWinrate[i]);
-		// }
-		// geode::log::info("------------------------------");
 	}
 
 	void updateWinrate(int start, int end) {
