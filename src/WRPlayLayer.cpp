@@ -1,13 +1,14 @@
 
 #include <Geode/modify/PlayLayer.hpp>
 
-const float ALPHA = 0.1;
+const float ALPHA = 0.3;
 
 using namespace geode::prelude;
 
 class $modify(WRPlayLayer, PlayLayer){
 	struct Fields {
 		float percentageWinrate[100];
+        int percentageDataCount[100];
 		float startingPercentage;
 	};
 
@@ -18,6 +19,7 @@ class $modify(WRPlayLayer, PlayLayer){
 
 		for(int i=0;i<100;i++){
 			m_fields->percentageWinrate[i] = 1;
+            m_fields->percentageDataCount[i] = 0;
 		}
 
 		return true;
@@ -52,7 +54,7 @@ class $modify(WRPlayLayer, PlayLayer){
         geode::log::info("updateWinrate()");
 		for(int i=start;i<end;i++){
             geode::log::info("index: {} old: {} new: {}",i,m_fields->percentageWinrate[i],ALPHA + m_fields->percentageWinrate[i]*(1-ALPHA));
-			m_fields->percentageWinrate[i] = ALPHA + m_fields->percentageWinrate[i]*(1-ALPHA);
+			
 		}
 
 		
@@ -61,4 +63,13 @@ class $modify(WRPlayLayer, PlayLayer){
 			m_fields->percentageWinrate[end] = m_fields->percentageWinrate[end]*(1-ALPHA);
 		}
 	}
+
+    void updateWinratePercentage(int index) {
+        m_fields->percentageDataCount[index]++;
+        float localAlpha = 1.0/(m_fields->percentageDataCount[index]+1);
+        if (localAlpha<ALPHA) {
+            localAlpha = ALPHA;
+        }
+        m_fields->percentageWinrate[index] = ALPHA + m_fields->percentageWinrate[index]*(1-ALPHA);
+    }
 };
