@@ -1,15 +1,21 @@
 
 #include <Geode/modify/PlayLayer.hpp>
+#include <cvolton.level-id-api/include/EditorIDs.hpp>
 
-const float ALPHA = 0.3;
+const float ALPHA = 0.25;
 
 using namespace geode::prelude;
 
 class $modify(WRPlayLayer, PlayLayer){
 	struct Fields {
-		float percentageWinrate[100];
-        int percentageDataCount[100];
+		std::array<float,100> percentageWinrate;
+        std::array<int,100> percentageDataCount;
 		float startingPercentage;
+
+		~Fields() {
+			Mod::get()->setSavedValue("data1", percentageWinrate);
+			Mod::get()->setSavedValue("data2", percentageDataCount);
+        }
 	};
 
 	bool init(GJGameLevel* level, bool useReplay, bool dontCreateObjects) {
@@ -17,10 +23,27 @@ class $modify(WRPlayLayer, PlayLayer){
 
         geode::log::info("init()");
 
-		for(int i=0;i<100;i++){
-			m_fields->percentageWinrate[i] = 1;
-            m_fields->percentageDataCount[i] = 0;
+		std::array<float,100> tempPercentageWinrate;
+		std::array<int,100> tempPercentageDataCount;
+		for(int i=0;i<100;i++){	
+			tempPercentageWinrate[i] = 1;
+			tempPercentageDataCount[i] = 0;
 		}
+
+		geode::SeedValueRSV ourLevelId = level->m_levelID;
+
+		if (!ourLevelId) {
+			geode::log::info("We are in a editor level");
+		}
+
+        geode::log::info("CURRENT ID {}",level->m_levelID);
+
+		auto data1 = Mod::get()->getSavedValue<std::array<float,100>>("data1", tempPercentageWinrate);
+		auto data2 = Mod::get()->getSavedValue<std::array<int,100>>("data2", tempPercentageDataCount);
+
+		memcpy(&m_fields->percentageWinrate, &data1, 100);
+		memcpy(&m_fields->percentageDataCount, &data2, 100);
+		
 
 		return true;
 	}
@@ -34,9 +57,9 @@ class $modify(WRPlayLayer, PlayLayer){
 	void resetLevel() {	
         
         geode::log::info("resetLevel()");
-        geode::log::info("current winrate is {}",calculateWinrate(0,100));
 
 		PlayLayer::resetLevel();
+		
         
 
 		m_fields->startingPercentage = getCurrentPercentInt();
