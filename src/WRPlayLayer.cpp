@@ -8,91 +8,115 @@ using namespace geode::prelude;
 
 class $modify(WRPlayLayer, PlayLayer){
 	struct Fields {
-		std::array<float,100> percentageWinrate;
-        std::array<int,100> percentageDataCount;
-		float startingPercentage;
+		std::array<float,100> m_percentageWinrate;
+        std::array<int,100> m_percentageDataCount;
+		float m_startingPercentage;
+		std::string m_levelStringWinrate;
+		std::string m_levelStringDataCount;
+		CCNodeRGBA* m_parentLabel = nullptr;
+		CCLabelBMFont* m_winrate_label = nullptr;
 
 		~Fields() {
-			Mod::get()->setSavedValue("data1", percentageWinrate);
-			Mod::get()->setSavedValue("data2", percentageDataCount);
+			Mod::get()->setSavedValue(m_levelStringWinrate, m_percentageWinrate);
+			Mod::get()->setSavedValue(m_levelStringDataCount, m_percentageDataCount);
         }
 	};
 
 	bool init(GJGameLevel* level, bool useReplay, bool dontCreateObjects) {
 		if (!PlayLayer::init(level, useReplay, dontCreateObjects)) return false;
 
-        geode::log::info("init()");
+        log::info("init()");
 
 		std::array<float,100> tempPercentageWinrate;
-		std::array<int,100> tempPercentageDataCount;
+		std::array<int,100> tempmPercentageDataCount;
 		for(int i=0;i<100;i++){	
-			tempPercentageWinrate[i] = 1;
-			tempPercentageDataCount[i] = 0;
+			tempPercentageWinrate[i] = 1.0;
+			tempmPercentageDataCount[i] = 0;
 		}
 
-		geode::SeedValueRSV ourLevelId = level->m_levelID;
-
+		int ourLevelId = level->m_levelID.value();
 		if (!ourLevelId) {
-			geode::log::info("We are in a editor level");
+			ourLevelId = EditorIDs::getID(level);
 		}
 
-        geode::log::info("CURRENT ID {}",level->m_levelID);
+		m_fields->m_levelStringWinrate = fmt::to_string(ourLevelId).append("-winrate");
 
-		auto data1 = Mod::get()->getSavedValue<std::array<float,100>>("data1", tempPercentageWinrate);
-		auto data2 = Mod::get()->getSavedValue<std::array<int,100>>("data2", tempPercentageDataCount);
+		m_fields->m_levelStringDataCount = fmt::to_string(ourLevelId).append("-datacount");
 
-		memcpy(&m_fields->percentageWinrate, &data1, 100);
-		memcpy(&m_fields->percentageDataCount, &data2, 100);
+		auto data1 = Mod::get()->getSavedValue<std::array<float,100>>(m_fields->m_levelStringWinrate, tempPercentageWinrate);
+		auto data2 = Mod::get()->getSavedValue<std::array<int,100>>(m_fields->m_levelStringDataCount, tempmPercentageDataCount);
+
+		memcpy(&m_fields->m_percentageWinrate, &data1, 100*sizeof(float));
+		memcpy(&m_fields->m_percentageDataCount, &data2, 100*sizeof(int));
 		
+		log::info("Total winrate is 1 in {}",calculateWinrate(0,100));
+
+
+		// m_fields->m_parentLabel = CCNodeRGBA::create();
+		// m_fields->m_parentLabel->setCascadeColorEnabled(true);
+		// m_fields->m_parentLabel->setCascadeOpacityEnabled(true);
+
+		// this->addChild(m_fields->m_parentLabel);
 
 		return true;
 	}
 
 	void levelComplete() {
-		updateWinrate(m_fields->startingPercentage,100);
+		updateWinrate(m_fields->m_startingPercentage,100);
 		
 		PlayLayer::levelComplete();
 	}
 	
 	void resetLevel() {	
         
-        geode::log::info("resetLevel()");
+        log::info("resetLevel()");
 
 		PlayLayer::resetLevel();
 		
-        
+        log::info("Total winrate is 1 in {}",calculateWinrate(0,100));
 
-		m_fields->startingPercentage = getCurrentPercentInt();
+		m_fields->m_startingPercentage = getCurrentPercentInt();
 	}
 
-    float calculateWinrate(int start, int end) {
-        float product = 1;
+    std::string calculateWinrate(int start, int end) {
+        double product = 1;
+		std::string returnString;
+
         for(int i=start;i<end;i++){
-            product *= m_fields->percentageWinrate[i];
+            product *= static_cast<double>(m_fields->m_percentageWinrate[i]);
+			log::info("Product is {} from {} which was {}",product,static_cast<double>(m_fields->m_percentageWinrate[i]),m_fields->m_percentageWinrate[i]);
         }
-        return product;
+
+		if (product==0.0) {
+			returnString = "Infinity";
+		} else {
+			returnString = fmt::to_string(1.0/product);
+		}
+
+        return returnString;
     }
 
 	void updateWinrate(int start, int end) {
-        geode::log::info("updateWinrate()");
+        log::info("updateWinrate({},{})",start,end);
 		for(int i=start;i<end;i++){
-            geode::log::info("index: {} old: {} new: {}",i,m_fields->percentageWinrate[i],ALPHA + m_fields->percentageWinrate[i]*(1-ALPHA));
-			
+			updateWinratePercentage(i);
 		}
 
 		
 		if (end<100) {
-            geode::log::info("index: {} old: {} new: {}",end,m_fields->percentageWinrate[end],m_fields->percentageWinrate[end]*(1-ALPHA));
-			m_fields->percentageWinrate[end] = m_fields->percentageWinrate[end]*(1-ALPHA);
+            log::info("index: {} old: {} new: {}",end,m_fields->m_percentageWinrate[end],m_fields->m_percentageWinrate[end]*(1-ALPHA));
+			m_fields->m_percentageWinrate[end] = m_fields->m_percentageWinrate[end]*(1-ALPHA);
 		}
 	}
 
     void updateWinratePercentage(int index) {
-        m_fields->percentageDataCount[index]++;
-        float localAlpha = 1.0/(m_fields->percentageDataCount[index]+1);
+        m_fields->m_percentageDataCount[index]++;
+        float localAlpha = 2.0/(m_fields->m_percentageDataCount[index]+1.5);
+		log::info("localAlpha: {}",localAlpha);
         if (localAlpha<ALPHA) {
             localAlpha = ALPHA;
         }
-        m_fields->percentageWinrate[index] = ALPHA + m_fields->percentageWinrate[index]*(1-ALPHA);
+        log::info("index: {} old: {} new: {}",index,m_fields->m_percentageWinrate[index],localAlpha + m_fields->m_percentageWinrate[index]*(1-localAlpha));
+        m_fields->m_percentageWinrate[index] = localAlpha + m_fields->m_percentageWinrate[index]*(1-localAlpha);
     }
 };
