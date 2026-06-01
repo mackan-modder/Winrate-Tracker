@@ -52,11 +52,24 @@ class $modify(WRPlayLayer, PlayLayer){
 		log::info("Total winrate is 1 in {}",calculateWinrate(0,100));
 
 
-		// m_fields->m_parentLabel = CCNodeRGBA::create();
-		// m_fields->m_parentLabel->setCascadeColorEnabled(true);
-		// m_fields->m_parentLabel->setCascadeOpacityEnabled(true);
+		m_fields->m_parentLabel = CCNodeRGBA::create();
+		m_fields->m_parentLabel->setCascadeColorEnabled(true);
+		m_fields->m_parentLabel->setCascadeOpacityEnabled(true);
 
-		// this->addChild(m_fields->m_parentLabel);
+		m_fields->m_parentLabel->setLayout(RowLayout::create());
+
+		auto uiLayer = this->getChildByID("UILayer");
+
+		m_fields->m_parentLabel->setPosition(uiLayer->getPosition() + CCPoint { 55.f, 20.f });
+		m_fields->m_parentLabel->setScale(0.35);
+
+		uiLayer->addChild(m_fields->m_parentLabel);
+
+		m_fields->m_parentLabel->setID("parent-label"_spr);
+
+		m_fields->m_winrate_label = CCLabelBMFont::create("Winrate is TEST", "bigFont.fnt");
+
+		m_fields->m_parentLabel->addChild(m_fields->m_winrate_label);
 
 		return true;
 	}
