@@ -11,9 +11,17 @@ class $modify(WRPlayLayer, PlayLayer){
 	struct Fields {
 		std::array<float,100> m_percentageWinrate;
         std::array<int,100> m_percentageDataCount;
+		std::array<float,100> m_percentageTimeLength;
+		bool m_measuringTimeLength;
+		float m_currentMeasurement;
+		int m_currentIndex;
+		bool m_currentIndexActive;
+
 		float m_startingPercentage;
+		int m_endOfSafeZone;
 		std::string m_levelStringWinrate;
 		std::string m_levelStringDataCount;
+		std::string m_levelStringTimeLength;
 		CCNodeRGBA* m_parentContainer = nullptr;
 		CCLabelBMFont* m_winrateLabel = nullptr;
 		CCLabelBMFont* m_winrateLabelFlat = nullptr;
@@ -22,6 +30,7 @@ class $modify(WRPlayLayer, PlayLayer){
 		~Fields() {
 			Mod::get()->setSavedValue(m_levelStringWinrate, m_percentageWinrate);
 			Mod::get()->setSavedValue(m_levelStringDataCount, m_percentageDataCount);
+			Mod::get()->setSavedValue(m_levelStringTimeLength, m_percentageTimeLength);
         }
 	};
 
@@ -30,11 +39,10 @@ class $modify(WRPlayLayer, PlayLayer){
 
         log::info("init()");
 
-		std::array<float,100> tempPercentageWinrate;
-		std::array<int,100> tempmPercentageDataCount;
 		for(int i=0;i<100;i++){	
-			tempPercentageWinrate[i] = 1.0;
-			tempmPercentageDataCount[i] = 0;
+			m_fields->m_percentageWinrate[i] = 1.0;
+			m_fields->m_percentageDataCount[i] = 0;
+			m_fields->m_percentageTimeLength[i] = -1;
 		}
 
 		int ourLevelId = level->m_levelID.value();
@@ -43,34 +51,41 @@ class $modify(WRPlayLayer, PlayLayer){
 		}
 
 		m_fields->m_levelStringWinrate = fmt::to_string(ourLevelId).append("-winrate");
-
 		m_fields->m_levelStringDataCount = fmt::to_string(ourLevelId).append("-datacount");
+		m_fields->m_levelStringTimeLength = fmt::to_string(ourLevelId).append("-timelength");
 
-		auto data1 = Mod::get()->getSavedValue<std::array<float,100>>(m_fields->m_levelStringWinrate, tempPercentageWinrate);
-		auto data2 = Mod::get()->getSavedValue<std::array<int,100>>(m_fields->m_levelStringDataCount, tempmPercentageDataCount);
+
+		auto data1 = Mod::get()->getSavedValue<std::array<float,100>>(m_fields->m_levelStringWinrate, m_fields->m_percentageWinrate);
+		auto data2 = Mod::get()->getSavedValue<std::array<int,100>>(m_fields->m_levelStringDataCount, m_fields->m_percentageDataCount);
+		auto data3 = Mod::get()->getSavedValue<std::array<float,100>>(m_fields->m_levelStringTimeLength, m_fields->m_percentageTimeLength);
 
 		memcpy(&m_fields->m_percentageWinrate, &data1, 100*sizeof(float));
 		memcpy(&m_fields->m_percentageDataCount, &data2, 100*sizeof(int));
-		
-		log::info("Total winrate is 1 in {}",calculateWinrate(0,100));
+		memcpy(&m_fields->m_percentageTimeLength, &data3, 100*sizeof(float));
 
+		m_fields->m_measuringTimeLength = false;
+		for(int i=0;i<100;i++){	
+			if (m_fields->m_percentageTimeLength[i] == -1) {
+				m_fields->m_measuringTimeLength = true;
+				break;
+			}
+		}
 
 		m_fields->m_parentContainer = CCNodeRGBA::create();
 		m_fields->m_parentContainer->setCascadeColorEnabled(true);
 		m_fields->m_parentContainer->setCascadeOpacityEnabled(true);
 
 		m_fields->m_parentContainer->setLayout(
-			RowLayout::create()
+			ColumnLayout::create()
 				->setGap(10.f)->setGrowCrossAxis(true)
-				->setAxisAlignment(AxisAlignment::Start));
+				->setAxisAlignment(AxisAlignment::Start)->setCrossAxisLineAlignment(AxisAlignment::Start));
 
 		auto uiLayer = this->getChildByID("UILayer");
 
 		m_fields->m_parentContainer->setPosition(uiLayer->getPosition() + CCPoint { 10.0f, 10.0f });
 		m_fields->m_parentContainer->setScale(0.35);
-		m_fields->m_parentContainer->setOpacity(100);
-		m_fields->m_parentContainer->setContentHeight(500);
-		m_fields->m_parentContainer->setContentWidth(500);
+		m_fields->m_parentContainer->setContentHeight(700);
+		m_fields->m_parentContainer->setContentWidth(700);
 
 		uiLayer->addChild(m_fields->m_parentContainer);
 
@@ -98,6 +113,8 @@ class $modify(WRPlayLayer, PlayLayer){
 
 		m_fields->m_completionTimeLabel->setAnchorPoint({0,0});
 
+		m_fields->m_parentContainer->setOpacity(86);
+
 		m_fields->m_parentContainer->updateLayout();
 
 		updateStaticTextLabels();
@@ -106,8 +123,8 @@ class $modify(WRPlayLayer, PlayLayer){
 	}
 
 	void levelComplete() {
-		int startPercentageWithKindness = (m_fields->m_startingPercentage==0.0) ? 0 : static_cast<int>(m_fields->m_startingPercentage+1.5);
-		updateWinrate(startPercentageWithKindness,100);
+		int startPercentage = (m_fields->m_startingPercentage==0.0) ? 0 : m_fields->m_endOfSafeZone;
+		updateWinrate(startPercentage,100);
 		updateStaticTextLabels();
 
 		PlayLayer::levelComplete();
@@ -115,10 +132,25 @@ class $modify(WRPlayLayer, PlayLayer){
 	
 	void resetLevel() {	
 
+		log::info("resetLevel()");
+
 		PlayLayer::resetLevel();
 
+		if (m_fields->m_measuringTimeLength) {
+			m_fields->m_measuringTimeLength = false;
+			for(int i=0;i<100;i++){	
+				if (m_fields->m_percentageTimeLength[i] == -1) {
+					m_fields->m_measuringTimeLength = true;
+					break;
+				}
+			}
+		}
 		
-
+		
+		m_fields->m_currentMeasurement = 0;
+		m_fields->m_currentIndex = getCurrentPercentInt();
+		m_fields->m_currentIndexActive = (getCurrentPercent()==0.0) ? true : false;
+		m_fields->m_endOfSafeZone = -1;
 		m_fields->m_startingPercentage = getCurrentPercent();
 	}
 
@@ -132,10 +164,22 @@ class $modify(WRPlayLayer, PlayLayer){
         return product;
     }
 
+	float calculateTimeToComplete(int end) {
+        float expectedTime = 1; // We assume respawn time is 1 second
+
+        for (int i=0;i<end;i++) {
+			expectedTime = (m_fields->m_percentageTimeLength[i]+expectedTime)/m_fields->m_percentageWinrate[i];
+		}
+
+        return expectedTime;
+    }
+
 	std::string assembleWinrateText(int firstIndex, int lastIndex, bool dynamic){
 		std::string returnString = "";
-		if (dynamic) returnString += "Current ";
 		returnString += "Winrate";
+
+		// if (dynamic) returnString += " from " + std::to_string(getCurrentPercentInt());
+		if (dynamic) returnString += " now" ;
 
 		if (lastIndex<99) {
 			returnString += " to " + std::to_string(lastIndex) + "%";
@@ -159,82 +203,73 @@ class $modify(WRPlayLayer, PlayLayer){
 			returnString += "1 in Infinity";
 		} else if (interpolatedWinrate>0.5) {
 			returnString += std::format("{:.3g}", interpolatedWinrate*100) + "%";
-		} else if ((interpolatedWinrate>=0.01)){
-			returnString += "1 in " + std::format("{:.2g}", 1/interpolatedWinrate);
 		} else {
-			returnString += "1 in " + formatLargeNumbers(1.0/interpolatedWinrate);
+			returnString += "1 in " + formatLargeNumbers(static_cast<int>(1.0/interpolatedWinrate));
 		}
 
 		return returnString;
 	}
 
-	std::string formatLargeNumbers(float number) {
-		
-		if (number<100.0) {
-			return std::format("{:.2g}", number);
-		}
-
-		
-
-		int intNumber = static_cast<int>(number);
-		std::string numberString = std::to_string(intNumber);
-		int exponent = numberString.length();
+	std::string formatLargeNumbers(int number) {
+		std::string numberString = std::to_string(number);
+		int exponent = numberString.length()-1;
 		int exponent3 = exponent/3;
 		int significantNumbers = exponent%3+1;
 		std::string returnNumberString = numberString.substr(0, significantNumbers);
 		// for(int i = 0;i<3-significantNumbers;i++) returnNumberString += " ";
+		if (significantNumbers==3) returnNumberString[2] = '0';
 
 		std::string numberSuffix = "";
 		switch (exponent3) {
 			case 0:
 				break;
 			case 1:
-				numberSuffix = "\tThousand";
+				numberSuffix = " Thousand";
 				break;
 			case 2:
-				numberSuffix = "\tMillion";
+				numberSuffix = " Million";
 				break;
 			case 3:
-				numberSuffix = "\tBillion";
+				numberSuffix = " Billion";
 				break;
 			case 4:
-				numberSuffix = "\tTrillion";
+				numberSuffix = " Trillion";
 				break;
 			case 5:
-				numberSuffix = "\tQuadrillion";
+				numberSuffix = " Quadrillion";
 				break;
 			case 6:
-				numberSuffix = "\tQuintillion";
+				numberSuffix = " Quintillion";
 				break;
 			case 7:
-				numberSuffix = "\tSextillion";
+				numberSuffix = " Sextillion";
 				break;
 			case 8:
-				numberSuffix = "\tOctillion";
+				numberSuffix = " Octillion";
 				break;
 			case 9:
-				numberSuffix = "\tNonillion";
+				numberSuffix = " Nonillion";
 				break;
 			case 10:
-				numberSuffix = "\tDecillion";
+				numberSuffix = " Decillion";
 				break;
 			case 11:
-				numberSuffix = "\tUndecillion";
+				numberSuffix = " Undecillion";
 				break;
 			case 12:
-				numberSuffix = "\tDuodecillion";
+				numberSuffix = " Duodecillion";
 				break;
 			case 13:
-				numberSuffix = "\tTredecillion";
+				numberSuffix = " Tredecillion";
 				break;
 			case 14:
-				numberSuffix = "\tQuattuordecillion";
+				numberSuffix = " Quattuordecillion";
 				break;
 			case 15:
-				numberSuffix = "\tQuindecillion";
+				numberSuffix = " Quindecillion";
 				break;
 			default:
-				numberSuffix = "\t*10^" + std::to_string(exponent3*3);
+				numberSuffix = "*10^" + std::to_string(exponent3*3);
 		}
 
 		return returnNumberString + numberSuffix;
@@ -242,6 +277,10 @@ class $modify(WRPlayLayer, PlayLayer){
 
 	void updateWinrate(int start, int end) {
         log::info("updateWinrate({},{})",start,end);
+		if (start==-1) {
+			log::info("SafeZoned!",start,end);
+			return;
+		}
 		for(int i=start;i<end;i++){
 			updateWinratePercentage(i);
 		}
@@ -276,18 +315,102 @@ class $modify(WRPlayLayer, PlayLayer){
 		auto lastElementWithZeroData = std::find(m_fields->m_percentageDataCount.begin(),m_fields->m_percentageDataCount.end(),0);
 		int lastIndex = lastElementWithZeroData-m_fields->m_percentageDataCount.begin();
 
-		std::string timeText = "Completion time: " + fmt::to_string(255);
+		std::string timeText = assembleCompletionTimeText();
 		m_fields->m_completionTimeLabel->setString(timeText.c_str());
 
-		m_fields->m_winrateLabelFlat->setString(assembleWinrateText(0,lastIndex,false).c_str());
+		std::string flatWinText = assembleWinrateText(0,lastIndex,false);
+		m_fields->m_winrateLabelFlat->setString(flatWinText.c_str());
 
 		m_fields->m_parentContainer->updateLayout();
+	}
+
+	std::string assembleCompletionTimeText() {
+		std::string returnString = "Time for ";
+
+		auto lastValidIterator = std::find(m_fields->m_percentageTimeLength.begin(),m_fields->m_percentageTimeLength.end(),-1);
+		int lastIndex = lastValidIterator-m_fields->m_percentageTimeLength.begin();
+
+		returnString += fmt::to_string(lastIndex) + "%: ";
+
+		float time = calculateTimeToComplete(lastIndex);
+
+		returnString += formatTime(static_cast<int>(time));
+
+		return returnString;
+	}
+
+	std::string formatTime(int time) {
+		std::string timeUnit;
+		std::string returnNumberString;
+		std::string timeString;
+
+		int originalTime = time;
+
+		if (time>60*60*24*7*52) {
+			time /= 60*60*24*7*52;
+			timeString = formatLargeNumbers(time);
+			timeUnit = "year";
+		} else if (time>60*60*24) {
+			time /= 60*60*24;
+			timeString = fmt::to_string(time);
+			timeUnit = "day";
+		} else if (time>60*60) {
+			time /= 60*60;
+			timeString = fmt::to_string(time);
+			timeUnit = "hour";
+		} else if (time>60) {
+			time /= 60;
+			timeString = fmt::to_string(time);
+			timeUnit = "minute";
+		} else {
+			timeString = fmt::to_string(time);
+			timeUnit = "second";
+		}
+		
+		if (time!=1) timeUnit += "s";
+		
+		return timeString + " " + timeUnit + std::to_string(originalTime);
 	}
 
 	void postUpdate(float dt) {
 
 		updateDynamicTextLabels();
+
+		if (m_fields->m_measuringTimeLength){
+			measureTimeUpdate(dt);
+		}
+
+		// Logic for adding a safe region in the beginning of each attempt 
+		// from practice mode or startpos.
+		if (m_fields->m_endOfSafeZone == -1 && m_attemptTime>0.8) {
+			m_fields->m_endOfSafeZone = getCurrentPercentInt()+1;
+		}
 		
 		PlayLayer::postUpdate(dt);
+	}
+
+	void measureTimeUpdate(float dt) {
+		if (getCurrentPercent()!=0.0) m_fields->m_currentMeasurement += dt;
+			if (m_fields->m_currentIndex!=getCurrentPercentInt()) {
+				log::info("measurement: {} {} {}",m_fields->m_currentMeasurement,m_fields->m_currentIndexActive, m_fields->m_percentageTimeLength[m_fields->m_currentIndex]);
+				if (m_fields->m_currentIndexActive && m_fields->m_percentageTimeLength[m_fields->m_currentIndex]==-1) {
+					m_fields->m_percentageTimeLength[m_fields->m_currentIndex] = m_fields->m_currentMeasurement;
+
+					log::info("Updated");
+
+					m_fields->m_measuringTimeLength = false;
+					for(int i=0;i<100;i++){	
+						if (m_fields->m_percentageTimeLength[i] == -1) {
+							m_fields->m_measuringTimeLength = true;
+						}
+					}
+				} 
+
+				
+
+				m_fields->m_currentIndexActive = true;
+				m_fields->m_currentIndex=getCurrentPercentInt();
+				m_fields->m_currentMeasurement = 0.0;
+			}
 	}
 };
