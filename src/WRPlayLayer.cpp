@@ -4,6 +4,12 @@
 #include <Geode/utils/random.hpp>
 
 const float ALPHA = 0.25;
+const double THOUSAND = pow(10,3);
+const double MILLION = pow(10,6);
+const double BILLION = pow(10,9);
+const double TRILLION = pow(10,12);
+const double QUADRILLION = pow(10,15);
+
 
 using namespace geode::prelude;
 
@@ -154,21 +160,21 @@ class $modify(WRPlayLayer, PlayLayer){
 		m_fields->m_startingPercentage = getCurrentPercent();
 	}
 
-    float calculateWinrate(int start, int end) {
-        float product = 1;
+    double calculateWinrate(int start, int end) {
+        double product = 1;
 
         for(int i=start;i<std::min({end,100});i++){
-            product *= static_cast<float>(m_fields->m_percentageWinrate[i]);
+            product *= static_cast<double>(m_fields->m_percentageWinrate[i]);
         }
 
         return product;
     }
 
-	float calculateTimeToComplete(int end) {
-        float expectedTime = 1; // We assume respawn time is 1 second
+	double calculateTimeToComplete(int end) {
+        double expectedTime = 1; // We assume respawn time is 1 second
 
         for (int i=0;i<end;i++) {
-			expectedTime = (m_fields->m_percentageTimeLength[i]+expectedTime)/m_fields->m_percentageWinrate[i];
+			expectedTime = (static_cast<double>(m_fields->m_percentageTimeLength[i])+expectedTime)/static_cast<double>(m_fields->m_percentageWinrate[i]);
 		}
 
         return expectedTime;
@@ -178,7 +184,6 @@ class $modify(WRPlayLayer, PlayLayer){
 		std::string returnString = "";
 		returnString += "Winrate";
 
-		// if (dynamic) returnString += " from " + std::to_string(getCurrentPercentInt());
 		if (dynamic) returnString += " now" ;
 
 		if (lastIndex<99) {
@@ -192,10 +197,9 @@ class $modify(WRPlayLayer, PlayLayer){
 		}
 
 		
+		double interpolation = static_cast<double>(getCurrentPercent())-static_cast<double>(firstIndex);
 
-		float interpolation = static_cast<float>(getCurrentPercent())-static_cast<float>(firstIndex);
-
-		float interpolatedWinrate 
+		double interpolatedWinrate 
 		= calculateWinrate( firstIndex, lastIndex+1)*(1.0-interpolation)
 		+ calculateWinrate( firstIndex+1, lastIndex+1)*interpolation;
 
@@ -204,103 +208,65 @@ class $modify(WRPlayLayer, PlayLayer){
 		} else if (interpolatedWinrate>0.5) {
 			returnString += std::format("{:.3g}", interpolatedWinrate*100) + "%";
 		} else {
-			returnString += "1 in " + formatLargeNumbers(static_cast<int>(1.0/interpolatedWinrate));
+			returnString += "1 in " + formatLargeNumbers((1.0/interpolatedWinrate));
 		}
 
 		return returnString;
 	}
 
-	std::string formatLargeNumbers(int number) {
-		std::string numberString = std::to_string(number);
-		int exponent = numberString.length()-1;
-		int exponent3 = exponent/3;
-		int significantNumbers = exponent%3+1;
-		std::string returnNumberString = numberString.substr(0, significantNumbers);
-		// for(int i = 0;i<3-significantNumbers;i++) returnNumberString += " ";
-		if (significantNumbers==3) returnNumberString[2] = '0';
+	std::string formatLargeNumbers(double number) {
 
-		std::string numberSuffix = "";
-		switch (exponent3) {
-			case 0:
-				break;
-			case 1:
-				numberSuffix = " Thousand";
-				break;
-			case 2:
-				numberSuffix = " Million";
-				break;
-			case 3:
-				numberSuffix = " Billion";
-				break;
-			case 4:
-				numberSuffix = " Trillion";
-				break;
-			case 5:
-				numberSuffix = " Quadrillion";
-				break;
-			case 6:
-				numberSuffix = " Quintillion";
-				break;
-			case 7:
-				numberSuffix = " Sextillion";
-				break;
-			case 8:
-				numberSuffix = " Octillion";
-				break;
-			case 9:
-				numberSuffix = " Nonillion";
-				break;
-			case 10:
-				numberSuffix = " Decillion";
-				break;
-			case 11:
-				numberSuffix = " Undecillion";
-				break;
-			case 12:
-				numberSuffix = " Duodecillion";
-				break;
-			case 13:
-				numberSuffix = " Tredecillion";
-				break;
-			case 14:
-				numberSuffix = " Quattuordecillion";
-				break;
-			case 15:
-				numberSuffix = " Quindecillion";
-				break;
-			default:
-				numberSuffix = "*10^" + std::to_string(exponent3*3);
+		if (number<1000.0) {
+			return std::format("{:.3g}",number);
+		} else if (number<MILLION) {
+			number *= 0.001;
+			return std::format("{:.3g}",number) + " thousand";
+		} else if (number<BILLION) {
+			number /= MILLION;
+			return std::format("{:.3g}",number) + " million";
+		} else if (number<TRILLION) {
+			number /= BILLION;
+			return std::format("{:.3g}",number) + " billion";
+		} else if (number<QUADRILLION) {
+			number /= TRILLION;
+			return std::format("{:.3g}",number) + " trillion";
+		} else {
+			return "infinity";
 		}
 
-		return returnNumberString + numberSuffix;
+		return "";
 	}
 
 	void updateWinrate(int start, int end) {
         log::info("updateWinrate({},{})",start,end);
 		if (start==-1) {
-			log::info("SafeZoned!",start,end);
+			log::info("SafeZoned!");
 			return;
 		}
 		for(int i=start;i<end;i++){
-			updateWinratePercentage(i);
+			updateWinratePercentage(i,true);
 		}
 
 		
 		if (end<100) {
-            log::info("index: {} old: {} new: {}",end,m_fields->m_percentageWinrate[end],m_fields->m_percentageWinrate[end]*(1-ALPHA));
-			m_fields->m_percentageWinrate[end] = m_fields->m_percentageWinrate[end]*(1-ALPHA);
+            // log::info("index: {} old: {} new: {}",end,m_fields->m_percentageWinrate[end],m_fields->m_percentageWinrate[end]*(1-ALPHA));
+			updateWinratePercentage(end, false);
 		}
 	}
 
-    void updateWinratePercentage(int index) {
+    void updateWinratePercentage(int index, bool passed) {
         m_fields->m_percentageDataCount[index]++;
         float localAlpha = 2.0/(m_fields->m_percentageDataCount[index]+1.5);
-		// log::info("localAlpha: {}",localAlpha);
         if (localAlpha<ALPHA) {
             localAlpha = ALPHA;
         }
         // log::info("index: {} old: {} new: {}",index,m_fields->m_percentageWinrate[index],localAlpha + m_fields->m_percentageWinrate[index]*(1-localAlpha));
-        m_fields->m_percentageWinrate[index] = localAlpha + m_fields->m_percentageWinrate[index]*(1-localAlpha);
+		if (passed) {
+			m_fields->m_percentageWinrate[index] = localAlpha + m_fields->m_percentageWinrate[index]*(1.0f-localAlpha);
+		} else {
+			m_fields->m_percentageWinrate[index] = m_fields->m_percentageWinrate[index]*(1.0f-localAlpha);
+		}
+        
     }
 
 	void updateDynamicTextLabels() {
@@ -332,44 +298,43 @@ class $modify(WRPlayLayer, PlayLayer){
 
 		returnString += fmt::to_string(lastIndex) + "%: ";
 
-		float time = calculateTimeToComplete(lastIndex);
+		double time = calculateTimeToComplete(lastIndex);
 
-		returnString += formatTime(static_cast<int>(time));
+		returnString += formatTime(time);
 
 		return returnString;
 	}
 
-	std::string formatTime(int time) {
+	std::string formatTime(double time) {
 		std::string timeUnit;
 		std::string returnNumberString;
 		std::string timeString;
 
-		int originalTime = time;
-
-		if (time>60*60*24*7*52) {
+		if (time>pow(10,37)) {
+			timeString = "infinity";
+			timeUnit = "";
+		} else if (time>60*60*24*7*52) {
 			time /= 60*60*24*7*52;
 			timeString = formatLargeNumbers(time);
-			timeUnit = "year";
+			timeUnit = "years";
 		} else if (time>60*60*24) {
 			time /= 60*60*24;
-			timeString = fmt::to_string(time);
-			timeUnit = "day";
+			timeString = std::format("{:.3g}",time);
+			timeUnit = "days";
 		} else if (time>60*60) {
 			time /= 60*60;
-			timeString = fmt::to_string(time);
-			timeUnit = "hour";
+			timeString = std::format("{:.3g}",time);
+			timeUnit = "hours";
 		} else if (time>60) {
 			time /= 60;
-			timeString = fmt::to_string(time);
-			timeUnit = "minute";
+			timeString = std::format("{:.3g}",time);
+			timeUnit = "minutes";
 		} else {
-			timeString = fmt::to_string(time);
-			timeUnit = "second";
+			timeString = std::format("{:.3g}",time);
+			timeUnit = "seconds";
 		}
 		
-		if (time!=1) timeUnit += "s";
-		
-		return timeString + " " + timeUnit + std::to_string(originalTime);
+		return timeString + " " + timeUnit;
 	}
 
 	void postUpdate(float dt) {
