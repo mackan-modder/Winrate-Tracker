@@ -10,7 +10,9 @@ class $modify(WRPlayerObject, PlayerObject){
 
         auto pl = static_cast<WRPlayLayer*>(PlayLayer::get()); // Special thanks to Jump Markers by TechStudent10
 
-        pl->updateWinrate(pl->m_fields->m_startingPercentage,pl->getCurrentPercentInt());
+        int startPercentageWithKindness = (pl->m_fields->m_startingPercentage==0.0) ? 0 : static_cast<int>(pl->m_fields->m_startingPercentage+1.5);
+        pl->updateWinrate(startPercentageWithKindness,pl->getCurrentPercentInt());
+        pl->updateStaticTextLabels();
 
         PlayerObject::playerDestroyed(noEffects);
     }
