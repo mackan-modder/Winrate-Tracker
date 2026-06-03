@@ -4,11 +4,19 @@
 #include <Geode/utils/random.hpp>
 
 const float ALPHA = 0.25;
+const double UPPERLIMIT = pow(10,200);
+const double LOWERLIMIT = pow(10,-6);
 const double THOUSAND = pow(10,3);
 const double MILLION = pow(10,6);
 const double BILLION = pow(10,9);
 const double TRILLION = pow(10,12);
 const double QUADRILLION = pow(10,15);
+const double QUINTILLION = pow(10,18);
+const double SEXTILLION = pow(10,21);
+const double SEPTILLION = pow(10,24);
+const double OCTILLION = pow(10,27);
+const double NONILLION = pow(10,30);
+
 
 
 using namespace geode::prelude;
@@ -18,11 +26,12 @@ class $modify(WRPlayLayer, PlayLayer){
 		std::array<float,100> m_percentageWinrate;
         std::array<int,100> m_percentageDataCount;
 		std::array<float,100> m_percentageTimeLength;
+		double m_staticWinrate = 1.0;
+		double m_staticTime = 1.0;
 		bool m_measuringTimeLength;
 		float m_currentMeasurement;
 		int m_currentIndex;
 		bool m_currentIndexActive;
-
 		float m_startingPercentage;
 		int m_endOfSafeZone;
 		std::string m_levelStringWinrate;
@@ -43,7 +52,7 @@ class $modify(WRPlayLayer, PlayLayer){
 	bool init(GJGameLevel* level, bool useReplay, bool dontCreateObjects) {
 		if (!PlayLayer::init(level, useReplay, dontCreateObjects)) return false;
 
-        log::info("init()");
+        // log::info("init()");
 
 		for(int i=0;i<100;i++){	
 			m_fields->m_percentageWinrate[i] = 1.0;
@@ -131,14 +140,13 @@ class $modify(WRPlayLayer, PlayLayer){
 	void levelComplete() {
 		int startPercentage = (m_fields->m_startingPercentage==0.0) ? 0 : m_fields->m_endOfSafeZone;
 		updateWinrate(startPercentage,100);
-		updateStaticTextLabels();
 
 		PlayLayer::levelComplete();
 	}
 	
 	void resetLevel() {	
 
-		log::info("resetLevel()");
+		// log::info("resetLevel()");
 
 		PlayLayer::resetLevel();
 
@@ -152,12 +160,14 @@ class $modify(WRPlayLayer, PlayLayer){
 			}
 		}
 		
-		
-		m_fields->m_currentMeasurement = 0;
-		m_fields->m_currentIndex = getCurrentPercentInt();
-		m_fields->m_currentIndexActive = (getCurrentPercent()==0.0) ? true : false;
-		m_fields->m_endOfSafeZone = -1;
-		m_fields->m_startingPercentage = getCurrentPercent();
+		if (m_fields->m_parentContainer) { // My way of checking for init()
+			updateStaticTextLabels();
+			m_fields->m_currentMeasurement = 0;
+			m_fields->m_currentIndex = getCurrentPercentInt();
+			m_fields->m_currentIndexActive = (getCurrentPercent()==0.0) ? true : false;
+			m_fields->m_endOfSafeZone = -1;
+			m_fields->m_startingPercentage = getCurrentPercent();
+		}
 	}
 
     double calculateWinrate(int start, int end) {
@@ -174,7 +184,7 @@ class $modify(WRPlayLayer, PlayLayer){
         double expectedTime = 1; // We assume respawn time is 1 second
 
         for (int i=0;i<end;i++) {
-			expectedTime = (static_cast<double>(m_fields->m_percentageTimeLength[i])+expectedTime)/static_cast<double>(m_fields->m_percentageWinrate[i]);
+			expectedTime = (static_cast<double>(m_fields->m_percentageTimeLength[i])+expectedTime)/std::max({static_cast<double>(m_fields->m_percentageWinrate[i]),LOWERLIMIT});
 		}
 
         return expectedTime;
@@ -186,7 +196,7 @@ class $modify(WRPlayLayer, PlayLayer){
 
 		if (dynamic) returnString += " now" ;
 
-		if (lastIndex<99) {
+		if (lastIndex<100) {
 			returnString += " to " + std::to_string(lastIndex) + "%";
 		}
 
@@ -197,14 +207,18 @@ class $modify(WRPlayLayer, PlayLayer){
 		}
 
 		
-		double interpolation = static_cast<double>(getCurrentPercent())-static_cast<double>(firstIndex);
+		double interpolation 
+		= (dynamic) ? (static_cast<double>(getCurrentPercent()) 
+		- static_cast<double>(firstIndex)) : 0.0;
 
 		double interpolatedWinrate 
 		= calculateWinrate( firstIndex, lastIndex+1)*(1.0-interpolation)
 		+ calculateWinrate( firstIndex+1, lastIndex+1)*interpolation;
 
+		
+
 		if (interpolatedWinrate==0.0) {
-			returnString += "1 in Infinity";
+			return returnString += "1 in Infinity";
 		} else if (interpolatedWinrate>0.5) {
 			returnString += std::format("{:.3g}", interpolatedWinrate*100) + "%";
 		} else {
@@ -219,7 +233,7 @@ class $modify(WRPlayLayer, PlayLayer){
 		if (number<1000.0) {
 			return std::format("{:.3g}",number);
 		} else if (number<MILLION) {
-			number *= 0.001;
+			number /= THOUSAND;
 			return std::format("{:.3g}",number) + " thousand";
 		} else if (number<BILLION) {
 			number /= MILLION;
@@ -230,17 +244,32 @@ class $modify(WRPlayLayer, PlayLayer){
 		} else if (number<QUADRILLION) {
 			number /= TRILLION;
 			return std::format("{:.3g}",number) + " trillion";
+		} else if (number<QUINTILLION) {
+			number /= QUADRILLION;
+			return std::format("{:.3g}",number) + " quadrillion";
+		} else if (number<SEXTILLION) {
+			number /= QUINTILLION;
+			return std::format("{:.3g}",number) + " quintillion";
+		} else if (number<SEPTILLION) {
+			number /= SEXTILLION;
+			return std::format("{:.3g}",number) + " sextillion";
+		} else if (number<OCTILLION) {
+			number /= SEPTILLION;
+			return std::format("{:.3g}",number) + " septillion";
+		} else if (number<NONILLION) {
+			number /= OCTILLION;
+			return std::format("{:.3g}",number) + " octillion";
 		} else {
-			return "infinity";
+			return std::format("{:.3g}",number);
 		}
 
 		return "";
 	}
 
 	void updateWinrate(int start, int end) {
-        log::info("updateWinrate({},{})",start,end);
+        // log::info("updateWinrate({},{})",start,end);
 		if (start==-1) {
-			log::info("SafeZoned!");
+			// log::info("SafeZoned!");
 			return;
 		}
 		for(int i=start;i<end;i++){
@@ -271,7 +300,7 @@ class $modify(WRPlayLayer, PlayLayer){
 
 	void updateDynamicTextLabels() {
 		auto lastElementWithZeroData = std::find(m_fields->m_percentageDataCount.begin(),m_fields->m_percentageDataCount.end(),0);
-		int lastIndex = lastElementWithZeroData-m_fields->m_percentageDataCount.begin();
+		int lastIndex = lastElementWithZeroData-m_fields->m_percentageDataCount.begin()+1;
 		m_fields->m_winrateLabel->setString((assembleWinrateText(getCurrentPercentInt(),lastIndex,true)).c_str());
 		m_fields->m_parentContainer->updateLayout();
 
@@ -289,6 +318,8 @@ class $modify(WRPlayLayer, PlayLayer){
 
 		m_fields->m_parentContainer->updateLayout();
 	}
+
+	
 
 	std::string assembleCompletionTimeText() {
 		std::string returnString = "Time for ";
@@ -310,10 +341,7 @@ class $modify(WRPlayLayer, PlayLayer){
 		std::string returnNumberString;
 		std::string timeString;
 
-		if (time>pow(10,37)) {
-			timeString = "infinity";
-			timeUnit = "";
-		} else if (time>60*60*24*7*52) {
+		if (time>60*60*24*7*52) {
 			time /= 60*60*24*7*52;
 			timeString = formatLargeNumbers(time);
 			timeUnit = "years";
@@ -347,7 +375,7 @@ class $modify(WRPlayLayer, PlayLayer){
 
 		// Logic for adding a safe region in the beginning of each attempt 
 		// from practice mode or startpos.
-		if (m_fields->m_endOfSafeZone == -1 && m_attemptTime>0.8) {
+		if (m_fields->m_endOfSafeZone == -1 && m_attemptTime>1.2) {
 			m_fields->m_endOfSafeZone = getCurrentPercentInt()+1;
 		}
 		
@@ -357,11 +385,11 @@ class $modify(WRPlayLayer, PlayLayer){
 	void measureTimeUpdate(float dt) {
 		if (getCurrentPercent()!=0.0) m_fields->m_currentMeasurement += dt;
 			if (m_fields->m_currentIndex!=getCurrentPercentInt()) {
-				log::info("measurement: {} {} {}",m_fields->m_currentMeasurement,m_fields->m_currentIndexActive, m_fields->m_percentageTimeLength[m_fields->m_currentIndex]);
+				// log::info("measurement: {} {} {}",m_fields->m_currentMeasurement,m_fields->m_currentIndexActive, m_fields->m_percentageTimeLength[m_fields->m_currentIndex]);
 				if (m_fields->m_currentIndexActive && m_fields->m_percentageTimeLength[m_fields->m_currentIndex]==-1) {
 					m_fields->m_percentageTimeLength[m_fields->m_currentIndex] = m_fields->m_currentMeasurement;
 
-					log::info("Updated");
+					// log::info("Updated");
 
 					m_fields->m_measuringTimeLength = false;
 					for(int i=0;i<100;i++){	

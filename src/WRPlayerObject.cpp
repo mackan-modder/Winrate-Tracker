@@ -12,8 +12,6 @@ class $modify(WRPlayerObject, PlayerObject){
 
         int startPercentage = (pl->m_fields->m_startingPercentage==0.0) ? 0 : pl->m_fields->m_endOfSafeZone;
         pl->updateWinrate(startPercentage,pl->getCurrentPercentInt());
-        pl->updateStaticTextLabels();
-
         PlayerObject::playerDestroyed(noEffects);
     }
 };
