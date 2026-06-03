@@ -18,16 +18,20 @@ const double OCTILLION = pow(10,27);
 const double NONILLION = pow(10,30);
 
 
+const bool DO_DYNAMIC = true;
+
+
 
 using namespace geode::prelude;
 
 class $modify(WRPlayLayer, PlayLayer){
 	struct Fields {
 		std::array<float,100> m_percentageWinrate;
+		std::array<float,100> m_tempWinrate;
         std::array<int,100> m_percentageDataCount;
 		std::array<float,100> m_percentageTimeLength;
-		double m_staticWinrate = 1.0;
-		double m_staticTime = 1.0;
+		double m_currentWinrate;
+		double m_currentTime;
 		bool m_measuringTimeLength;
 		float m_currentMeasurement;
 		int m_currentIndex;
@@ -40,7 +44,9 @@ class $modify(WRPlayLayer, PlayLayer){
 		CCNodeRGBA* m_parentContainer = nullptr;
 		CCLabelBMFont* m_winrateLabel = nullptr;
 		CCLabelBMFont* m_winrateLabelFlat = nullptr;
+		std::string m_winrateLabelFlatString;
 		CCLabelBMFont* m_completionTimeLabel = nullptr;
+		std::string m_completionTimeLabelString;
 
 		~Fields() {
 			Mod::get()->setSavedValue(m_levelStringWinrate, m_percentageWinrate);
@@ -106,33 +112,46 @@ class $modify(WRPlayLayer, PlayLayer){
 
 		m_fields->m_parentContainer->setID("parent-label"_spr);
 
-		m_fields->m_winrateLabel = CCLabelBMFont::create("Winrate is TEST", "bigFont.fnt");
+		if (Mod::get()->getSettingValue<bool>("winrate-dynamic")) {
+			m_fields->m_winrateLabel = CCLabelBMFont::create("Winrate is TEST", "bigFont.fnt");
 
-		m_fields->m_parentContainer->addChild(m_fields->m_winrateLabel);
+			m_fields->m_parentContainer->addChild(m_fields->m_winrateLabel);
 
-		m_fields->m_winrateLabel->setAnchorPoint({0,0});
+			m_fields->m_winrateLabel->setAnchorPoint({0,0});
+			
+			m_fields->m_parentContainer->updateLayout();
+		}
+		if (Mod::get()->getSettingValue<bool>("winrate-flat")) {
+			m_fields->m_winrateLabelFlat = CCLabelBMFont::create("Winrate is TEST", "bigFont.fnt");
+
+			m_fields->m_parentContainer->addChild(m_fields->m_winrateLabelFlat);
+
+			m_fields->m_winrateLabelFlat->setAnchorPoint({0,0});
+			
+			m_fields->m_parentContainer->updateLayout();
+		}
+		if (Mod::get()->getSettingValue<bool>("completion-time")) {
+			m_fields->m_completionTimeLabel = CCLabelBMFont::create("Time from 0 to 100 is TEST", "bigFont.fnt");
+
+			m_fields->m_parentContainer->addChild(m_fields->m_completionTimeLabel);
+
+			m_fields->m_completionTimeLabel->setAnchorPoint({0,0});
+		}
 		
-		m_fields->m_parentContainer->updateLayout();
-
-		m_fields->m_winrateLabelFlat = CCLabelBMFont::create("Winrate is TEST", "bigFont.fnt");
-
-		m_fields->m_parentContainer->addChild(m_fields->m_winrateLabelFlat);
-
-		m_fields->m_winrateLabelFlat->setAnchorPoint({0,0});
-		
-		m_fields->m_parentContainer->updateLayout();
-
-		m_fields->m_completionTimeLabel = CCLabelBMFont::create("Time from 0 to 100 is TEST", "bigFont.fnt");
-
-		m_fields->m_parentContainer->addChild(m_fields->m_completionTimeLabel);
-
-		m_fields->m_completionTimeLabel->setAnchorPoint({0,0});
-
-		m_fields->m_parentContainer->setOpacity(86);
+		m_fields->m_parentContainer->setOpacity(static_cast<int>(255.0*Mod::get()->getSettingValue<float>("label-opacity")));
 
 		m_fields->m_parentContainer->updateLayout();
 
 		updateStaticTextLabels();
+
+		auto lastElementWithZeroData = std::find(m_fields->m_percentageDataCount.begin(),m_fields->m_percentageDataCount.end(),0);
+		int lastIndexWinrate = lastElementWithZeroData-m_fields->m_percentageDataCount.begin()+1;
+		m_fields->m_currentWinrate = calculateWinrate(0, lastIndexWinrate);
+
+		auto lastValidIterator = std::find(m_fields->m_percentageTimeLength.begin(),m_fields->m_percentageTimeLength.end(),-1);
+		int lastIndexTime = lastValidIterator-m_fields->m_percentageTimeLength.begin();
+		m_fields->m_currentTime = calculateTimeToComplete(lastIndexTime); 
+
 
 		return true;
 	}
@@ -140,6 +159,7 @@ class $modify(WRPlayLayer, PlayLayer){
 	void levelComplete() {
 		int startPercentage = (m_fields->m_startingPercentage==0.0) ? 0 : m_fields->m_endOfSafeZone;
 		updateWinrate(startPercentage,100);
+		updateChange();
 
 		PlayLayer::levelComplete();
 	}
@@ -219,7 +239,7 @@ class $modify(WRPlayLayer, PlayLayer){
 
 		if (interpolatedWinrate==0.0) {
 			return returnString += "1 in Infinity";
-		} else if (interpolatedWinrate>0.5) {
+		} else if (interpolatedWinrate>0.1) {
 			returnString += std::format("{:.3g}", interpolatedWinrate*100) + "%";
 		} else {
 			returnString += "1 in " + formatLargeNumbers((1.0/interpolatedWinrate));
@@ -273,17 +293,17 @@ class $modify(WRPlayLayer, PlayLayer){
 			return;
 		}
 		for(int i=start;i<end;i++){
-			updateWinratePercentage(i,true);
+			updateWinratePercentage(i,true,false);
 		}
 
 		
 		if (end<100) {
             // log::info("index: {} old: {} new: {}",end,m_fields->m_percentageWinrate[end],m_fields->m_percentageWinrate[end]*(1-ALPHA));
-			updateWinratePercentage(end, false);
+			updateWinratePercentage(end, false,false);
 		}
 	}
 
-    void updateWinratePercentage(int index, bool passed) {
+    void updateWinratePercentage(int index, bool passed, bool temp) {
         m_fields->m_percentageDataCount[index]++;
         float localAlpha = 2.0/(m_fields->m_percentageDataCount[index]+1.5);
         if (localAlpha<ALPHA) {
@@ -310,16 +330,108 @@ class $modify(WRPlayLayer, PlayLayer){
 		auto lastElementWithZeroData = std::find(m_fields->m_percentageDataCount.begin(),m_fields->m_percentageDataCount.end(),0);
 		int lastIndex = lastElementWithZeroData-m_fields->m_percentageDataCount.begin();
 
-		std::string timeText = assembleCompletionTimeText();
-		m_fields->m_completionTimeLabel->setString(timeText.c_str());
+		if (m_fields->m_completionTimeLabel){
+			m_fields->m_completionTimeLabelString = assembleCompletionTimeText();
+			m_fields->m_completionTimeLabel->setString(m_fields->m_completionTimeLabelString.c_str());
+		}
 
-		std::string flatWinText = assembleWinrateText(0,lastIndex,false);
-		m_fields->m_winrateLabelFlat->setString(flatWinText.c_str());
+		if (m_fields->m_winrateLabelFlat){
+			m_fields->m_winrateLabelFlatString = assembleWinrateText(0,lastIndex,false);
+			m_fields->m_winrateLabelFlat->setString(m_fields->m_winrateLabelFlatString.c_str());
+		}
 
 		m_fields->m_parentContainer->updateLayout();
 	}
 
-	
+	void updateChange() {
+		// Calculating the new winrate
+		auto lastElementWithZeroData = std::find(m_fields->m_percentageDataCount.begin(),m_fields->m_percentageDataCount.end(),0);
+		int lastIndexWinrate = lastElementWithZeroData-m_fields->m_percentageDataCount.begin()+1;
+		double newWinrate = calculateWinrate(0, lastIndexWinrate);
+
+		
+		// Calculating the new completion time
+		auto lastValidIterator = std::find(m_fields->m_percentageTimeLength.begin(),m_fields->m_percentageTimeLength.end(),-1);
+		int lastIndexTime = lastValidIterator-m_fields->m_percentageTimeLength.begin();
+		double newTime = calculateTimeToComplete(lastIndexTime);
+
+		double differenceTime = newTime-m_fields->m_currentTime;
+		double differenceWinrate = newWinrate-m_fields->m_currentWinrate;
+
+		if (m_fields->m_completionTimeLabel) {
+			std::string changesTime = m_fields->m_completionTimeLabelString;
+			
+			changesTime += ((differenceWinrate<0) ? " (+" : " (-") + formatTime(std::abs(differenceTime)) + ")";
+			m_fields->m_completionTimeLabel->setString(changesTime.c_str());
+			
+			m_fields->m_currentTime = newTime;
+
+		}
+
+		if (m_fields->m_winrateLabelFlat) {
+			std::string changesWinrate = m_fields->m_winrateLabelFlatString;
+
+			if (m_fields->m_currentWinrate>0.1) {
+				changesWinrate += ((differenceWinrate>=0) ? " (+" : " (-") + formatLargeNumbers(std::abs(differenceWinrate*100)) + "%)";
+			} else {
+				double differenceWinrateInverse = 1/newWinrate-1/m_fields->m_currentWinrate;
+				changesWinrate += ((differenceWinrate<0) ? " (+" : " (-") + formatLargeNumbers(std::abs(differenceWinrateInverse)) + ")";
+			}
+
+			m_fields->m_winrateLabelFlat->setString(changesWinrate.c_str());
+
+			m_fields->m_currentWinrate = newWinrate;
+		}
+		m_fields->m_parentContainer->updateLayout();
+	}	
+
+
+	// void updateChangeDynamic() { // NOT FINISHED
+	// 	// Calculating the new winrate
+	// 	auto lastElementWithZeroData = std::find(m_fields->m_percentageDataCount.begin(),m_fields->m_percentageDataCount.end(),0);
+	// 	int lastIndexWinrate = lastElementWithZeroData-m_fields->m_percentageDataCount.begin()+1;
+	// 	double newWinrate = calculateWinrate(0, lastIndexWinrate);
+
+		
+	// 	// Calculating the new completion time
+	// 	auto lastValidIterator = std::find(m_fields->m_percentageTimeLength.begin(),m_fields->m_percentageTimeLength.end(),-1);
+	// 	int lastIndexTime = lastValidIterator-m_fields->m_percentageTimeLength.begin();
+	// 	double newTime = calculateTimeToComplete(lastIndexTime);
+
+	// 	double differenceTime = newTime-m_fields->m_currentTime;
+	// 	double differenceWinrate = newWinrate-m_fields->m_currentWinrate;
+
+	// 	if (m_fields->m_completionTimeLabel) {
+	// 		std::string changesTime = m_fields->m_completionTimeLabelString;
+			
+	// 		changesTime += ((differenceWinrate<0) ? " (+" : " (-") + formatTime(std::abs(differenceTime)) + ")";
+	// 		m_fields->m_completionTimeLabel->setString(changesTime.c_str());
+			
+	// 		m_fields->m_currentTime = newTime;
+
+	// 	}
+
+	// 	if (m_fields->m_completionTimeLabel) {
+	// 		std::string changesWinrate = m_fields->m_winrateLabelFlatString;
+
+	// 		if (m_fields->m_currentWinrate>0.1) {
+	// 			changesWinrate += ((differenceWinrate>=0) ? " (+" : " (-") + formatLargeNumbers(std::abs(differenceWinrate*100)) + "%)";
+	// 		} else {
+	// 			double differenceWinrateInverse = 1/newWinrate-1/m_fields->m_currentWinrate;
+	// 			changesWinrate += ((differenceWinrate<0) ? " (+" : " (-") + formatLargeNumbers(std::abs(differenceWinrateInverse)) + ")";
+	// 		}
+
+	// 		m_fields->m_winrateLabelFlat->setString(changesWinrate.c_str());
+
+	// 		m_fields->m_currentWinrate = newWinrate;
+	// 	}
+	// 	m_fields->m_parentContainer->updateLayout();
+	// }
+
+	double calculateWinrateDynamic() {
+		log::info(" ");
+		return 1;
+	}
 
 	std::string assembleCompletionTimeText() {
 		std::string returnString = "Time for ";
@@ -367,7 +479,9 @@ class $modify(WRPlayLayer, PlayLayer){
 
 	void postUpdate(float dt) {
 
-		updateDynamicTextLabels();
+		if (m_fields->m_winrateLabel) updateDynamicTextLabels();
+
+		
 
 		if (m_fields->m_measuringTimeLength){
 			measureTimeUpdate(dt);
@@ -378,6 +492,10 @@ class $modify(WRPlayLayer, PlayLayer){
 		if (m_fields->m_endOfSafeZone == -1 && m_attemptTime>1.2) {
 			m_fields->m_endOfSafeZone = getCurrentPercentInt()+1;
 		}
+
+		// if (DO_DYNAMIC && !m_player1->m_isDead && getCurrentPercentInt()>=m_fields->m_endOfSafeZone) {
+		// 	updateChangeDynamic();
+		// }
 		
 		PlayLayer::postUpdate(dt);
 	}

@@ -14,5 +14,32 @@
 	"dependencies": {
 		"geode.node-ids": ">=v1.23.3",
 		"cvolton.level-id-api": ">=2.0.0"
+	},"settings": {
+		"label-opacity": {
+            "name": "Label Opacity",
+            "description": "Changes the opacity of the labels",
+            "type": "float",
+            "default": 0.4,
+            "min": 0,
+            "max": 1,
+            "control": {
+                "slider": true
+            }
+        },
+        "completion-time": {
+            "name": "Enable Estimated Completion Time",
+            "type": "bool",
+            "default": true
+        },
+        "winrate-flat": {
+            "name": "Enable Winrate",
+            "type": "bool",
+            "default": true
+        },
+        "winrate-dynamic": {
+            "name": "Enable Dynamic Winrate",
+            "type": "bool",
+            "default": true
+        }
 	}
 }
