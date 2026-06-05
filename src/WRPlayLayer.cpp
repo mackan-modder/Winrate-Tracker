@@ -3,22 +3,22 @@
 #include <cvolton.level-id-api/include/EditorIDs.hpp>
 #include <Geode/utils/random.hpp>
 
-const float ALPHA = 0.25;
-const double UPPERLIMIT = pow(10,200);
-const double LOWERLIMIT = pow(10,-6);
-const double THOUSAND = pow(10,3);
-const double MILLION = pow(10,6);
-const double BILLION = pow(10,9);
-const double TRILLION = pow(10,12);
-const double QUADRILLION = pow(10,15);
-const double QUINTILLION = pow(10,18);
-const double SEXTILLION = pow(10,21);
-const double SEPTILLION = pow(10,24);
-const double OCTILLION = pow(10,27);
-const double NONILLION = pow(10,30);
+static const float ALPHA = 0.3333;
+static const double UPPERLIMIT = pow(10,200);
+static const double LOWERLIMIT = pow(10,-6);
+static const double THOUSAND = pow(10,3);
+static const double MILLION = pow(10,6);
+static const double BILLION = pow(10,9);
+static const double TRILLION = pow(10,12);
+static const double QUADRILLION = pow(10,15);
+static const double QUINTILLION = pow(10,18);
+static const double SEXTILLION = pow(10,21);
+static const double SEPTILLION = pow(10,24);
+static const double OCTILLION = pow(10,27);
+static const double NONILLION = pow(10,30);
 
 
-const bool DO_DYNAMIC = true;
+static const bool DO_DYNAMIC = true;
 
 
 
@@ -29,18 +29,18 @@ class $modify(WRPlayLayer, PlayLayer){
 		std::array<float,100> m_percentageWinrate;
 		std::array<float,100> m_tempWinrate;
         std::array<int,100> m_percentageDataCount;
+		// m_linkedLevels includes the level we are in and other linked levels
+		std::set<std::string> m_linkedLevels; 
 		std::array<float,100> m_percentageTimeLength;
+		std::string m_levelId;
 		double m_currentWinrate;
 		double m_currentTime;
 		bool m_measuringTimeLength;
 		float m_currentMeasurement;
 		int m_currentIndex;
 		bool m_currentIndexActive;
-		float m_startingPercentage;
-		int m_endOfSafeZone;
-		std::string m_levelStringWinrate;
-		std::string m_levelStringDataCount;
-		std::string m_levelStringTimeLength;
+		float m_startingPercentage = -1;
+		int m_endOfSafeZone = -1;
 		CCNodeRGBA* m_parentContainer = nullptr;
 		CCLabelBMFont* m_winrateLabel = nullptr;
 		CCLabelBMFont* m_winrateLabelFlat = nullptr;
@@ -49,9 +49,14 @@ class $modify(WRPlayLayer, PlayLayer){
 		std::string m_completionTimeLabelString;
 
 		~Fields() {
-			Mod::get()->setSavedValue(m_levelStringWinrate, m_percentageWinrate);
-			Mod::get()->setSavedValue(m_levelStringDataCount, m_percentageDataCount);
-			Mod::get()->setSavedValue(m_levelStringTimeLength, m_percentageTimeLength);
+			for (std::string levelId : m_linkedLevels) {
+				Mod::get()->setSavedValue(levelId + "-winrate", m_percentageWinrate);
+				Mod::get()->setSavedValue(levelId+ "-datacount", m_percentageDataCount);
+				Mod::get()->setSavedValue(levelId + "-timelength", m_percentageTimeLength);
+				Mod::get()->setSavedValue(levelId + "-linked", m_linkedLevels);
+			}
+
+			
         }
 	};
 
@@ -71,18 +76,30 @@ class $modify(WRPlayLayer, PlayLayer){
 			ourLevelId = EditorIDs::getID(level);
 		}
 
-		m_fields->m_levelStringWinrate = fmt::to_string(ourLevelId).append("-winrate");
-		m_fields->m_levelStringDataCount = fmt::to_string(ourLevelId).append("-datacount");
-		m_fields->m_levelStringTimeLength = fmt::to_string(ourLevelId).append("-timelength");
+		std::string levelId = fmt::to_string(ourLevelId);
+
+		// Saving the levelID to use when saving the data later
+
+		m_fields->m_percentageWinrate = Mod::get()->getSavedValue<std::array<float,100>>(levelId + "-winrate", m_fields->m_percentageWinrate);
+		m_fields->m_percentageDataCount = Mod::get()->getSavedValue<std::array<int,100>>(levelId+ "-datacount", m_fields->m_percentageDataCount);
+		m_fields->m_percentageTimeLength = Mod::get()->getSavedValue<std::array<float,100>>(levelId + "-timelength", m_fields->m_percentageTimeLength);
+		m_fields->m_linkedLevels = Mod::get()->getSavedValue<std::set<std::string>>(levelId + "-linked", m_fields->m_linkedLevels);
+
+		m_fields->m_linkedLevels.insert(levelId);
+		m_fields->m_levelId = levelId;
 
 
-		auto data1 = Mod::get()->getSavedValue<std::array<float,100>>(m_fields->m_levelStringWinrate, m_fields->m_percentageWinrate);
-		auto data2 = Mod::get()->getSavedValue<std::array<int,100>>(m_fields->m_levelStringDataCount, m_fields->m_percentageDataCount);
-		auto data3 = Mod::get()->getSavedValue<std::array<float,100>>(m_fields->m_levelStringTimeLength, m_fields->m_percentageTimeLength);
+		// Saving the id in a list here we can loop through later
+		auto dataAll = Mod::get()->getSavedValue<std::set<std::string>>("all-level-ids");
+		dataAll.insert(levelId);
+		Mod::get()->setSavedValue("all-level-ids", dataAll);
 
-		memcpy(&m_fields->m_percentageWinrate, &data1, 100*sizeof(float));
-		memcpy(&m_fields->m_percentageDataCount, &data2, 100*sizeof(int));
-		memcpy(&m_fields->m_percentageTimeLength, &data3, 100*sizeof(float));
+		Mod::get()->setSavedValue(levelId + "-levelname",level->m_levelName);
+
+		for (std::string id : dataAll) {
+			log::info("{} 1 {}",id, Mod::get()->getSavedValue<std::string>(id + "-levelname", ""));
+		}
+		
 
 		m_fields->m_measuringTimeLength = false;
 		for(int i=0;i<100;i++){	
@@ -153,6 +170,16 @@ class $modify(WRPlayLayer, PlayLayer){
 		m_fields->m_currentTime = calculateTimeToComplete(lastIndexTime); 
 
 
+		if (m_fields->m_parentContainer) { // My way of checking for init()
+			updateStaticTextLabels();
+			m_fields->m_currentMeasurement = 0;
+			m_fields->m_currentIndex = getCurrentPercentInt();
+			m_fields->m_currentIndexActive = (getCurrentPercent()==0.0) ? true : false;
+			m_fields->m_endOfSafeZone = -1;
+			m_fields->m_startingPercentage = getCurrentPercentInt();
+			log::info("reset {}",getCurrentPercentInt());
+		}
+
 		return true;
 	}
 
@@ -186,7 +213,8 @@ class $modify(WRPlayLayer, PlayLayer){
 			m_fields->m_currentIndex = getCurrentPercentInt();
 			m_fields->m_currentIndexActive = (getCurrentPercent()==0.0) ? true : false;
 			m_fields->m_endOfSafeZone = -1;
-			m_fields->m_startingPercentage = getCurrentPercent();
+			m_fields->m_startingPercentage = getCurrentPercentInt();
+			log::info("reset {}",getCurrentPercentInt());
 		}
 	}
 
@@ -217,12 +245,12 @@ class $modify(WRPlayLayer, PlayLayer){
 		if (dynamic) returnString += " now" ;
 
 		if (lastIndex<100) {
-			returnString += " to " + std::to_string(lastIndex) + "%";
+			returnString += " to " + std::to_string(std::max({0,lastIndex-1})) + "%";
 		}
 
 		returnString += ": ";
 
-		if (getCurrentPercentInt()>lastIndex) {
+		if (getCurrentPercentInt()>=lastIndex) {
 			return returnString += "?";
 		}
 
@@ -287,7 +315,8 @@ class $modify(WRPlayLayer, PlayLayer){
 	}
 
 	void updateWinrate(int start, int end) {
-        // log::info("updateWinrate({},{})",start,end);
+		
+        log::info("updateWinrate({},{})",start,end);
 		if (start==-1) {
 			// log::info("SafeZoned!");
 			return;
@@ -304,8 +333,9 @@ class $modify(WRPlayLayer, PlayLayer){
 	}
 
     void updateWinratePercentage(int index, bool passed, bool temp) {
+		// Initial higher alpha
         m_fields->m_percentageDataCount[index]++;
-        float localAlpha = 2.0/(m_fields->m_percentageDataCount[index]+1.5);
+        float localAlpha = 2.0/(m_fields->m_percentageDataCount[index]*0.5+3.5);
         if (localAlpha<ALPHA) {
             localAlpha = ALPHA;
         }
@@ -320,7 +350,7 @@ class $modify(WRPlayLayer, PlayLayer){
 
 	void updateDynamicTextLabels() {
 		auto lastElementWithZeroData = std::find(m_fields->m_percentageDataCount.begin(),m_fields->m_percentageDataCount.end(),0);
-		int lastIndex = lastElementWithZeroData-m_fields->m_percentageDataCount.begin()+1;
+		int lastIndex = lastElementWithZeroData-m_fields->m_percentageDataCount.begin();
 		m_fields->m_winrateLabel->setString((assembleWinrateText(getCurrentPercentInt(),lastIndex,true)).c_str());
 		m_fields->m_parentContainer->updateLayout();
 
@@ -385,6 +415,33 @@ class $modify(WRPlayLayer, PlayLayer){
 		m_fields->m_parentContainer->updateLayout();
 	}	
 
+	void linkLevel(std::string levelKeep, std::string levelDicard) {
+
+		auto dataLevelKeep = Mod::get()->getSavedValue<std::set<std::string>>(levelKeep + "-linked");
+
+		auto dataLevelDicard = Mod::get()->getSavedValue<std::set<std::string>>(levelDicard + "-linked");
+
+		for (std::string id : dataLevelDicard) {
+			dataLevelKeep.insert(id);
+		}
+
+		Mod::get()->setSavedValue(levelKeep + "-linked", dataLevelKeep);
+		Mod::get()->setSavedValue(levelDicard + "-linked", dataLevelKeep);
+
+		if (m_fields->m_levelId==levelKeep || m_fields->m_levelId==levelDicard)	{
+			for (std::string id : dataLevelKeep) {
+				m_fields->m_linkedLevels.insert(id);
+			}
+		}
+
+		if (m_fields->m_levelId==levelDicard) {
+			m_fields->m_percentageWinrate = Mod::get()->getSavedValue<std::array<float,100>>(levelKeep + "-winrate", m_fields->m_percentageWinrate);
+			m_fields->m_percentageDataCount = Mod::get()->getSavedValue<std::array<int,100>>(levelKeep+ "-datacount", m_fields->m_percentageDataCount);
+			m_fields->m_percentageTimeLength = Mod::get()->getSavedValue<std::array<float,100>>(levelKeep + "-timelength", m_fields->m_percentageTimeLength);
+		}
+	}
+
+	// ok so something is extremely wrong, there was no
 
 	// void updateChangeDynamic() { // NOT FINISHED
 	// 	// Calculating the new winrate
@@ -428,10 +485,10 @@ class $modify(WRPlayLayer, PlayLayer){
 	// 	m_fields->m_parentContainer->updateLayout();
 	// }
 
-	double calculateWinrateDynamic() {
-		log::info(" ");
-		return 1;
-	}
+	// double calculateWinrateDynamic() {
+	// 	log::info(" ");
+	// 	return 1;
+	// }
 
 	std::string assembleCompletionTimeText() {
 		std::string returnString = "Time for ";
@@ -443,7 +500,7 @@ class $modify(WRPlayLayer, PlayLayer){
 
 		double time = calculateTimeToComplete(lastIndex);
 
-		returnString += formatTime(time);
+		returnString += (time != 1.0) ? formatTime(time) : "?";
 
 		return returnString;
 	}
@@ -504,7 +561,7 @@ class $modify(WRPlayLayer, PlayLayer){
 		if (getCurrentPercent()!=0.0) m_fields->m_currentMeasurement += dt;
 			if (m_fields->m_currentIndex!=getCurrentPercentInt()) {
 				// log::info("measurement: {} {} {}",m_fields->m_currentMeasurement,m_fields->m_currentIndexActive, m_fields->m_percentageTimeLength[m_fields->m_currentIndex]);
-				if (m_fields->m_currentIndexActive && m_fields->m_percentageTimeLength[m_fields->m_currentIndex]==-1) {
+				if (m_fields->m_currentIndexActive && m_fields->m_percentageTimeLength[m_fields->m_currentIndex]==-1 && getCurrentPercentInt()==m_fields->m_currentIndex+1) {
 					m_fields->m_percentageTimeLength[m_fields->m_currentIndex] = m_fields->m_currentMeasurement;
 
 					// log::info("Updated");
@@ -516,8 +573,6 @@ class $modify(WRPlayLayer, PlayLayer){
 						}
 					}
 				} 
-
-				
 
 				m_fields->m_currentIndexActive = true;
 				m_fields->m_currentIndex=getCurrentPercentInt();
