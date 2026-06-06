@@ -33,6 +33,9 @@ class $modify(WRPlayLayer, PlayLayer){
 		std::set<std::string> m_linkedLevels; 
 		std::array<float,100> m_percentageTimeLength;
 		std::string m_levelId;
+		std::string m_levelName;
+		bool m_scheduleLinkPopup = false;
+		std::string m_linkLevelName;
 		double m_currentWinrate;
 		double m_currentTime;
 		bool m_measuringTimeLength;
@@ -93,6 +96,8 @@ class $modify(WRPlayLayer, PlayLayer){
 		auto dataAll = Mod::get()->getSavedValue<std::set<std::string>>("all-level-ids");
 		dataAll.insert(levelId);
 		Mod::get()->setSavedValue("all-level-ids", dataAll);
+
+		m_fields->m_levelName = level->m_levelName;
 
 		Mod::get()->setSavedValue(levelId + "-levelname",level->m_levelName);
 
@@ -180,8 +185,29 @@ class $modify(WRPlayLayer, PlayLayer){
 			log::info("reset {}",getCurrentPercentInt());
 		}
 
+
+		// Until I find the motivation to learn menus and 
+		// and implement searching for levels to link, this is a fair solution
+		// imo
+		auto previousLevel = Mod::get()->getSavedValue<std::string>("previous-level", "");
+		auto previousLevelName = Mod::get()->getSavedValue<std::string>(previousLevel+"-levelname", "");
+
+		if (previousLevelName!=m_fields->m_levelName && previousLevelName != "" && m_fields->m_levelName != "") {
+			int minimumLength = static_cast<int>(std::min({previousLevelName.length(),m_fields->m_levelName.length(),static_cast<unsigned long long>(5)}));
+
+			if (previousLevelName.compare(0, minimumLength, previousLevelName)) {
+				m_fields->m_scheduleLinkPopup = true;
+				m_fields->m_linkLevelName = previousLevelName;
+			}
+		}
+
+
+		Mod::get()->setSavedValue("previous-level", levelId);
+
 		return true;
 	}
+
+	
 
 	void levelComplete() {
 		int startPercentage = (m_fields->m_startingPercentage==0.0) ? 0 : m_fields->m_endOfSafeZone;
@@ -415,31 +441,30 @@ class $modify(WRPlayLayer, PlayLayer){
 		m_fields->m_parentContainer->updateLayout();
 	}	
 
-	void linkLevel(std::string levelKeep, std::string levelDicard) {
+	// void linkLevel(std::string levelKeep, std::string levelDicard) {
+	// 	auto dataLevelKeep = Mod::get()->getSavedValue<std::set<std::string>>(levelKeep + "-linked");
 
-		auto dataLevelKeep = Mod::get()->getSavedValue<std::set<std::string>>(levelKeep + "-linked");
+	// 	auto dataLevelDicard = Mod::get()->getSavedValue<std::set<std::string>>(levelDicard + "-linked");
 
-		auto dataLevelDicard = Mod::get()->getSavedValue<std::set<std::string>>(levelDicard + "-linked");
+	// 	for (std::string id : dataLevelDicard) {
+	// 		dataLevelKeep.insert(id);
+	// 	}
 
-		for (std::string id : dataLevelDicard) {
-			dataLevelKeep.insert(id);
-		}
+	// 	Mod::get()->setSavedValue(levelKeep + "-linked", dataLevelKeep);
+	// 	Mod::get()->setSavedValue(levelDicard + "-linked", dataLevelKeep);
 
-		Mod::get()->setSavedValue(levelKeep + "-linked", dataLevelKeep);
-		Mod::get()->setSavedValue(levelDicard + "-linked", dataLevelKeep);
+	// 	if (m_fields->m_levelId==levelKeep || m_fields->m_levelId==levelDicard)	{
+	// 		for (std::string id : dataLevelKeep) {
+	// 			m_fields->m_linkedLevels.insert(id);
+	// 		}
+	// 	}
 
-		if (m_fields->m_levelId==levelKeep || m_fields->m_levelId==levelDicard)	{
-			for (std::string id : dataLevelKeep) {
-				m_fields->m_linkedLevels.insert(id);
-			}
-		}
-
-		if (m_fields->m_levelId==levelDicard) {
-			m_fields->m_percentageWinrate = Mod::get()->getSavedValue<std::array<float,100>>(levelKeep + "-winrate", m_fields->m_percentageWinrate);
-			m_fields->m_percentageDataCount = Mod::get()->getSavedValue<std::array<int,100>>(levelKeep+ "-datacount", m_fields->m_percentageDataCount);
-			m_fields->m_percentageTimeLength = Mod::get()->getSavedValue<std::array<float,100>>(levelKeep + "-timelength", m_fields->m_percentageTimeLength);
-		}
-	}
+	// 	if (m_fields->m_levelId==levelDicard) {
+	// 		m_fields->m_percentageWinrate = Mod::get()->getSavedValue<std::array<float,100>>(levelKeep + "-winrate", m_fields->m_percentageWinrate);
+	// 		m_fields->m_percentageDataCount = Mod::get()->getSavedValue<std::array<int,100>>(levelKeep+ "-datacount", m_fields->m_percentageDataCount);
+	// 		m_fields->m_percentageTimeLength = Mod::get()->getSavedValue<std::array<float,100>>(levelKeep + "-timelength", m_fields->m_percentageTimeLength);
+	// 	}
+	// }
 
 	// ok so something is extremely wrong, there was no
 
@@ -535,6 +560,9 @@ class $modify(WRPlayLayer, PlayLayer){
 	}
 
 	void postUpdate(float dt) {
+
+			
+		
 
 		if (m_fields->m_winrateLabel) updateDynamicTextLabels();
 

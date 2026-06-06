@@ -18,5 +18,6 @@ class $modify(WRPlayerObject, PlayerObject){
 
         // It worksssssssssssssss! Wait, lol yeah that ruins it but now they are linked.
         // pl->linkLevel("1","2");
+        
     }
 };
