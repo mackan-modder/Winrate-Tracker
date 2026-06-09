@@ -62,9 +62,11 @@ class $modify(WREditLevelLayer, EditLevelLayer) {
         for (std::string id : currentLinkedList) {
 			if (id==m_fields->m_idPrevious) m_fields->m_isLinked = true;
 		}
-
+        
         // auto spr = ButtonSprite::create("Link");
-        auto spr = CircleButtonSprite::createWithSpriteFrameName("percentage.png"_spr);
+        auto spr = CircleButtonSprite::createWithSprite("percentage.png"_spr);
+
+        spr->setScale(0.8);
 
         m_fields->m_buttonLink = CCMenuItemSpriteExtra::create(
             spr,
@@ -74,11 +76,12 @@ class $modify(WREditLevelLayer, EditLevelLayer) {
         );
         m_fields->m_buttonLink->setID("wr-link-button-edit");
         m_fields->m_buttonLink->setZOrder(1);
-        m_fields->m_buttonLink->setScale(0.8);
         m_fields->m_buttonLink->setVisible(true);
 
         auto folderMenu = getChildByID("folder-menu");
         folderMenu->addChild(m_fields->m_buttonLink);
+        
+        m_fields->m_buttonLink->setScale(0.8);
         folderMenu->updateLayout();
         
         return true;

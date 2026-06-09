@@ -43,7 +43,6 @@
         }
 	},"resources": {
         "sprites": [
-            "resources/*.png"
+            "resources/percentage.png"
         ]
-    }
-}
+    }}

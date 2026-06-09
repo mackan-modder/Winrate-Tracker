@@ -62,7 +62,7 @@ class $modify(WRLevelInfoLayer, LevelInfoLayer) {
 		}
 
         // auto spr = ButtonSprite::create("Link");
-        auto sprite = CircleButtonSprite::createWithSpriteFrameName("percentage.png"_spr);
+        auto sprite = CircleButtonSprite::createWithSprite("percentage.png"_spr);
 
         m_fields->m_buttonLink = CCMenuItemSpriteExtra::create(
             sprite,
