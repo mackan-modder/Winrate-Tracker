@@ -3,7 +3,7 @@
 #include <cvolton.level-id-api/include/EditorIDs.hpp>
 #include <Geode/utils/random.hpp>
 
-static const float ALPHA = 0.3333;
+static const float ALPHA = 0.15; 
 static const double UPPERLIMIT = pow(10,200);
 static const double LOWERLIMIT = pow(10,-6);
 static const double THOUSAND = pow(10,3);
@@ -16,7 +16,17 @@ static const double SEXTILLION = pow(10,21);
 static const double SEPTILLION = pow(10,24);
 static const double OCTILLION = pow(10,27);
 static const double NONILLION = pow(10,30);
-
+static const double DECILLION = pow(10,33);
+static const double UNDECILLION = pow(10,36);
+static const double DUODECILLION = pow(10,39);
+static const double TREDECILLION = pow(10,42);
+static const double QUATTUORDECILLION = pow(10,45);
+static const double QUINDECILLION = pow(10,48);
+static const double SEXDECILLION = pow(10,51);
+static const double SEPTENDECILLION = pow(10,54);
+static const double OCTODECILLION = pow(10,57);
+static const double NOVEMDECILLION = pow(10,60);
+static const double VIGINTILLION = pow(10,63);
 
 static const bool DO_DYNAMIC = true;
 
@@ -333,8 +343,41 @@ class $modify(WRPlayLayer, PlayLayer){
 		} else if (number<NONILLION) {
 			number /= OCTILLION;
 			return std::format("{:.3g}",number) + " octillion";
+		} else if (number<DECILLION) {
+			number /= NONILLION;
+			return std::format("{:.3g}",number) + " nonillion";
+		} else if (number<UNDECILLION) {
+			number /= DECILLION;
+			return std::format("{:.3g}",number) + " decillion";
+		} else if (number<DUODECILLION) {
+			number /= UNDECILLION;
+			return std::format("{:.3g}",number) + " undecillion";
+		} else if (number<TREDECILLION) {
+			number /= DUODECILLION;
+			return std::format("{:.3g}",number) + " duodecillion";
+		} else if (number<QUATTUORDECILLION) {
+			number /= TREDECILLION;
+			return std::format("{:.3g}",number) + " tredecillion";
+		} else if (number<QUINDECILLION) {
+			number /= QUATTUORDECILLION;
+			return std::format("{:.3g}",number) + " quattuordecillion";
+		} else if (number<SEXDECILLION) {
+			number /= QUINDECILLION;
+			return std::format("{:.3g}",number) + " quindecillion";
+		} else if (number<SEPTENDECILLION) {
+			number /= SEXDECILLION;
+			return std::format("{:.3g}",number) + " sexdecillion";
+		} else if (number<OCTODECILLION) {
+			number /= SEPTENDECILLION;
+			return std::format("{:.3g}",number) + " septendecillion";
+		} else if (number<NOVEMDECILLION) {
+			number /= OCTODECILLION;
+			return std::format("{:.3g}",number) + " octodecillion";
+		} else if (number<VIGINTILLION) {
+			number /= NOVEMDECILLION;
+			return std::format("{:.3g}",number) + " novemdecillion";
 		} else {
-			return std::format("{:.3g}",number);
+			return std::format("{:.3g}",number) ;
 		}
 
 		return "";

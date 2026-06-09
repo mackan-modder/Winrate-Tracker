@@ -41,5 +41,9 @@
             "type": "bool",
             "default": true
         }
-	}
+	},"resources": {
+        "sprites": [
+            "resources/*.png"
+        ]
+    }
 }

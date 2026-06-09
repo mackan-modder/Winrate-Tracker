@@ -1,5 +1,6 @@
 #include <Geode/modify/LevelInfoLayer.hpp>
 #include <cvolton.level-id-api/include/EditorIDs.hpp>
+#include <Geode/ui/BasedButtonSprite.hpp>
 
 using namespace geode::prelude;
 
@@ -10,17 +11,27 @@ class $modify(WRLevelInfoLayer, LevelInfoLayer) {
         std::string m_nameCurrent = "Stereo Madness";
         std::string m_idPrevious = "1";
         std::string m_namePrevious = "Stereo Madness";
-        CCMenuItemSpriteExtra* btn = nullptr;
-        CCMenuItemSpriteExtra* btn2 = nullptr;
+        bool m_isLinked;
+        CCMenuItemSpriteExtra* m_buttonLink = nullptr;
+        // CCMenuItemSpriteExtra* btn2 = nullptr;
 
         ~Fields() {
-            Mod::get()->setSavedValue("previous-level-id", m_idCurrent);
-            Mod::get()->setSavedValue("previous-level-name", m_nameCurrent);
-
-            if (Mod::get()->getSavedValue<std::string>("previous-level-id-backup","1")!=m_idCurrent) {
+            if (m_idCurrent!=m_idPrevious && m_idCurrent!=Mod::get()->getSavedValue<std::string>("previous-level-id-backup","1")) {
                 Mod::get()->setSavedValue("previous-level-id-backup", m_idPrevious);
                 Mod::get()->setSavedValue("previous-level-name-backup", m_namePrevious);
-            }
+                
+                Mod::get()->setSavedValue("previous-level-id", m_idCurrent);
+                Mod::get()->setSavedValue("previous-level-name", m_nameCurrent);
+            } else if (m_idCurrent==Mod::get()->getSavedValue<std::string>("previous-level-id-backup","1")) {
+                std::string backupId = Mod::get()->getSavedValue<std::string>("previous-level-id-backup","1");
+                std::string backupName = Mod::get()->getSavedValue<std::string>("previous-level-name-backup","1");
+
+                Mod::get()->setSavedValue("previous-level-id-backup", m_idPrevious);
+                Mod::get()->setSavedValue("previous-level-name-backup", m_namePrevious);
+
+                Mod::get()->setSavedValue("previous-level-id", backupId);
+                Mod::get()->setSavedValue("previous-level-name", backupName);
+            }            
         }
     };
 
@@ -32,7 +43,6 @@ class $modify(WRLevelInfoLayer, LevelInfoLayer) {
 			ourLevelId = EditorIDs::getID(level);
 		}
 
-        
         m_fields->m_idCurrent = std::to_string(ourLevelId);
         m_fields->m_nameCurrent = level->m_levelName;
         
@@ -44,78 +54,74 @@ class $modify(WRLevelInfoLayer, LevelInfoLayer) {
             m_fields->m_namePrevious = Mod::get()->getSavedValue<std::string>("previous-level-name-backup","Stereo Madness");
         }
 
+        std::set<std::string> currentLinkedList = Mod::get()->getSavedValue<std::set<std::string>>(m_fields->m_idCurrent + "-linked");
 
-        auto spr = ButtonSprite::create("Link");
+        m_fields->m_isLinked = false;
+        for (std::string id : currentLinkedList) {
+			if (id==m_fields->m_idPrevious) m_fields->m_isLinked = true;
+		}
 
-        m_fields->btn = CCMenuItemSpriteExtra::create(
-            spr,
+        // auto spr = ButtonSprite::create("Link");
+        auto sprite = CircleButtonSprite::createWithSpriteFrameName("percentage.png"_spr);
+
+        m_fields->m_buttonLink = CCMenuItemSpriteExtra::create(
+            sprite,
             nullptr,
             this,
-            menu_selector(WRLevelInfoLayer::linkPopup)
+            menu_selector(WRLevelInfoLayer::onLinkButton)
         );
-        m_fields->btn->setID("wr-link-button-level");
-        m_fields->btn->setZOrder(1);
-        m_fields->btn->setVisible(true);
+        m_fields->m_buttonLink->setID("wr-link-button-level");
+        m_fields->m_buttonLink->setZOrder(1);
+        m_fields->m_buttonLink->setScale(0.8);
+        m_fields->m_buttonLink->setVisible(true);
 
-        auto otherMenu = getChildByID("left-side-menu");
-        otherMenu->addChild(m_fields->btn);
-        otherMenu->updateLayout();
-
-        auto spr2 = ButtonSprite::create("Un-Link");
-
-        m_fields->btn2 = CCMenuItemSpriteExtra::create(
-            spr2,
-            nullptr,
-            this,
-            menu_selector(WRLevelInfoLayer::unlinkPopup)
-        );
-        m_fields->btn2->setID("wr-link-button-level");
-        m_fields->btn2->setZOrder(1);
-        m_fields->btn2->setVisible(true);
-
-        otherMenu->addChild(m_fields->btn2);
-        otherMenu->updateLayout();
+        auto folderMenu = getChildByID("left-side-menu");
+        folderMenu->addChild(m_fields->m_buttonLink);
+        folderMenu->updateLayout();
         
         return true;
     }
 
-    void unlinkPopup(CCObject*) {
+    void onLinkButton (CCObject*) {
+        if (m_fields->m_isLinked) {
+            unlinkPopup();
+        } else {
+            linkPopup();
+        }
+    }
 
+    void unlinkPopup() {
         auto alert = geode::createQuickPopup(
-			"Un-Link Level?",            // title
+			"Un-Link Previous Level?",            // title
 			"Do you want to un-link \"" 
-            + m_fields->m_nameCurrent + "\" from all other levels?",   // content
+            + m_fields->m_namePrevious + "\" from " + m_fields->m_nameCurrent + " all other levels?",   // content
 			"Cancel", "Un-Link",      // buttons
 			[](auto, bool btn2) {
 				if (btn2) {
                     auto CCSC = static_cast<CCScene*>(CCScene::get());
 
-                    auto LIL = static_cast<WRLevelInfoLayer*>(CCSC->getChildByID("LevelInfoLayer"));
+                    auto LIL = static_cast<WRLevelInfoLayer*>(CCSC->getChildByID("EditLevLILayer"));
 
-                    LIL->unlinkLevel(LIL->m_fields->m_idCurrent);
+                    LIL->unlinkLevel(LIL->m_fields->m_idPrevious);
 				}
 			}
 		);
     }
 
-    // something is strange.
-    void linkPopup(CCObject*) {
-
+    void linkPopup() {
         auto alert = geode::createQuickPopup(
 			"Link to previous level?",            // title
 			"Do you want to link the winrate of the levels \"" 
             + m_fields->m_nameCurrent + "\" and \"" 
-            + m_fields->m_namePrevious +  "\"?",   // content
+            + m_fields->m_namePrevious +  "\"?\n",   // content
 			"Cancel", "Link",      // buttons
 			[](auto, bool btn2) {
 				if (btn2) {
                     auto CCSC = static_cast<CCScene*>(CCScene::get());
 
-                    auto LIL = static_cast<WRLevelInfoLayer*>(CCSC->getChildByID("LevelInfoLayer"));
+                    auto LIL = static_cast<WRLevelInfoLayer*>(CCSC->getChildByID("EditLevLILayer"));
 
                     LIL->linkPopup2();
-
-                    // LIL->linkLevel("1","2");
 				}
 			}
 		);
@@ -140,12 +146,13 @@ class $modify(WRLevelInfoLayer, LevelInfoLayer) {
 			[](auto, bool btn2) {
                 auto CCSC = static_cast<CCScene*>(CCScene::get());
 
-                auto LIL = static_cast<WRLevelInfoLayer*>(CCSC->getChildByID("LevelInfoLayer"));
+                auto LIL = static_cast<WRLevelInfoLayer*>(CCSC->getChildByID("EditLevLILayer"));
 				if (btn2) {
                     LIL->linkLevel(LIL->m_fields->m_idPrevious,LIL->m_fields->m_idCurrent);// something is strange.
 				} else {
                     LIL->linkLevel(LIL->m_fields->m_idCurrent,LIL->m_fields->m_idPrevious);// something is strange.
                 }
+                LIL->m_fields->m_isLinked = true;
 			}
 		);
     }
@@ -159,6 +166,8 @@ class $modify(WRLevelInfoLayer, LevelInfoLayer) {
         for (std::string id : oldLinked) {
 			Mod::get()->setSavedValue(id + "-linked", oldLinked);
 		}
+
+        m_fields->m_isLinked = false;
 	}
 
     void linkLevel(std::string levelKeep, std::string levelDicard) {

@@ -1,50 +1,8 @@
 #include <Geode/modify/EditLevelLayer.hpp>
 #include <cvolton.level-id-api/include/EditorIDs.hpp>
+#include <Geode/ui/BasedButtonSprite.hpp>
 
 using namespace geode::prelude;
-
-class WREditPopup : public geode::Popup {
-protected:
-    bool init(std::string const& value) {
-        if (!Popup::init(440.f, 360.f))
-            return false;
-
-        // convenience function provided by Popup
-        // for adding/setting a title to the popup
-        this->setTitle("Winrate Tracker");
-
-        auto label = CCLabelBMFont::create(value.c_str(), "bigFont.fnt");
-        m_mainLayer->addChildAtPosition(label, Anchor::Center);
-
-        auto spr = ButtonSprite::create("Link");
-
-        // m_fields->m_buttonLink = CCMenuItemSpriteExtra::create(
-        //     spr,
-        //     nullptr,
-        //     this,
-        //     menu_selector(WREditLevelLayer::linkPopup)
-        // );
-        // m_fields->btn->setID("wr-link-button-edit");
-        // m_fields->btn->setZOrder(1);
-        // m_fields->btn->setVisible(true);
-
-        return true;
-    }
-
-
-
-public:
-    static WREditPopup* create(std::string const& text) {
-        auto ret = new WREditPopup();
-        if (ret->init(text)) {
-            ret->autorelease();
-            return ret;
-        }
-
-        delete ret;
-        return nullptr;
-    }
-};
 
 class $modify(WREditLevelLayer, EditLevelLayer) {
     struct Fields {
@@ -52,9 +10,10 @@ class $modify(WREditLevelLayer, EditLevelLayer) {
         std::string m_nameCurrent = "Stereo Madness";
         std::string m_idPrevious = "1";
         std::string m_namePrevious = "Stereo Madness";
-        CCMenuItemSpriteExtra* btn = nullptr;
-        CCMenuItemSpriteExtra* btn2 = nullptr;
-        CCMenuItemSpriteExtra* btn3 = nullptr;
+        bool m_isLinked;
+        CCMenuItemSpriteExtra* m_buttonLink = nullptr;
+        // CCMenuItemSpriteExtra* btn2 = nullptr;
+        // CCMenuItemSpriteExtra* menuButton = nullptr;
 
         ~Fields() {
             if (m_idCurrent!=m_idPrevious && m_idCurrent!=Mod::get()->getSavedValue<std::string>("previous-level-id-backup","1")) {
@@ -97,67 +56,54 @@ class $modify(WREditLevelLayer, EditLevelLayer) {
             m_fields->m_namePrevious = Mod::get()->getSavedValue<std::string>("previous-level-name-backup","Stereo Madness");
         }
 
-        auto spr = ButtonSprite::create("Link");
+        std::set<std::string> currentLinkedList = Mod::get()->getSavedValue<std::set<std::string>>(m_fields->m_idCurrent + "-linked");
 
-        m_fields->btn = CCMenuItemSpriteExtra::create(
+        m_fields->m_isLinked = false;
+        for (std::string id : currentLinkedList) {
+			if (id==m_fields->m_idPrevious) m_fields->m_isLinked = true;
+		}
+
+        // auto spr = ButtonSprite::create("Link");
+        auto spr = CircleButtonSprite::createWithSpriteFrameName("percentage.png"_spr);
+
+        m_fields->m_buttonLink = CCMenuItemSpriteExtra::create(
             spr,
             nullptr,
             this,
-            menu_selector(WREditLevelLayer::linkPopup)
+            menu_selector(WREditLevelLayer::onLinkButton)
         );
-        m_fields->btn->setID("wr-link-button-edit");
-        m_fields->btn->setZOrder(1);
-        m_fields->btn->setVisible(true);
+        m_fields->m_buttonLink->setID("wr-link-button-edit");
+        m_fields->m_buttonLink->setZOrder(1);
+        m_fields->m_buttonLink->setScale(0.8);
+        m_fields->m_buttonLink->setVisible(true);
 
-        auto otherMenu = getChildByID("folder-menu");
-        otherMenu->addChild(m_fields->btn);
-        otherMenu->updateLayout();
-
-        auto spr2 = ButtonSprite::create("Un-Link");
-
-        m_fields->btn2 = CCMenuItemSpriteExtra::create(
-            spr2,
-            nullptr,
-            this,
-            menu_selector(WREditLevelLayer::unlinkPopup)
-        );
-        m_fields->btn2->setID("wr-link-button-level");
-        m_fields->btn2->setZOrder(1);
-        m_fields->btn2->setVisible(true);
-
-        otherMenu->addChild(m_fields->btn2);
-        otherMenu->updateLayout();
-
-        auto spr3 = ButtonSprite::create("Parent");
-
-        m_fields->btn3 = CCMenuItemSpriteExtra::create(
-            spr3,
-            nullptr,
-            this,
-            menu_selector(WREditLevelLayer::parentPopup)
-        );
-        m_fields->btn3->setID("wr-parent-button");
-        m_fields->btn3->setZOrder(1);
-        m_fields->btn3->setVisible(true);
-
-        otherMenu->addChild(m_fields->btn3);
-        otherMenu->updateLayout();
+        auto folderMenu = getChildByID("folder-menu");
+        folderMenu->addChild(m_fields->m_buttonLink);
+        folderMenu->updateLayout();
         
         return true;
     }
 
-    void parentPopup(CCObject*) {
-        auto alert = WREditPopup::create("TEST test TEST");
-        alert->setZOrder(20);
-        this->addChild(alert);
-        this->updateLayout();
+    // void onMenuButton(CCObject*) {
+    //     auto alert = WREditPopup::create(m_fields->m_idCurrent,m_fields->m_nameCurrent,m_fields->m_idPrevious,m_fields->m_namePrevious);
+    //     alert->setZOrder(30); 
+    //     this->addChild(alert);
+    //     this->updateLayout();
+    // }
+
+    void onLinkButton (CCObject*) {
+        if (m_fields->m_isLinked) {
+            unlinkPopup();
+        } else {
+            linkPopup();
+        }
     }
 
-    void unlinkPopup(CCObject*) {
+    void unlinkPopup() {
         auto alert = geode::createQuickPopup(
-			"Un-Link Level?",            // title
+			"Un-Link Previous Level?",            // title
 			"Do you want to un-link \"" 
-            + m_fields->m_nameCurrent + "\" from all other levels?",   // content
+            + m_fields->m_namePrevious + "\" from " + m_fields->m_nameCurrent + " all other levels?",   // content
 			"Cancel", "Un-Link",      // buttons
 			[](auto, bool btn2) {
 				if (btn2) {
@@ -165,19 +111,18 @@ class $modify(WREditLevelLayer, EditLevelLayer) {
 
                     auto ELL = static_cast<WREditLevelLayer*>(CCSC->getChildByID("EditLevelLayer"));
 
-                    ELL->unlinkLevel(ELL->m_fields->m_idCurrent);
+                    ELL->unlinkLevel(ELL->m_fields->m_idPrevious);
 				}
 			}
 		);
     }
 
-    // something is strange.
-    void linkPopup(CCObject*) {
+    void linkPopup() {
         auto alert = geode::createQuickPopup(
 			"Link to previous level?",            // title
 			"Do you want to link the winrate of the levels \"" 
             + m_fields->m_nameCurrent + "\" and \"" 
-            + m_fields->m_namePrevious +  "\"?\n(Escape to exit)",   // content
+            + m_fields->m_namePrevious +  "\"?\n",   // content
 			"Cancel", "Link",      // buttons
 			[](auto, bool btn2) {
 				if (btn2) {
@@ -186,8 +131,6 @@ class $modify(WREditLevelLayer, EditLevelLayer) {
                     auto ELL = static_cast<WREditLevelLayer*>(CCSC->getChildByID("EditLevelLayer"));
 
                     ELL->linkPopup2();
-
-                    // ELL->linkLevel("1","2");
 				}
 			}
 		);
@@ -218,6 +161,7 @@ class $modify(WREditLevelLayer, EditLevelLayer) {
 				} else {
                     ELL->linkLevel(ELL->m_fields->m_idCurrent,ELL->m_fields->m_idPrevious);// something is strange.
                 }
+                ELL->m_fields->m_isLinked = true;
 			}
 		);
     }
@@ -231,6 +175,8 @@ class $modify(WREditLevelLayer, EditLevelLayer) {
         for (std::string id : oldLinked) {
 			Mod::get()->setSavedValue(id + "-linked", oldLinked);
 		}
+
+        m_fields->m_isLinked = false;
 	}
 
     void linkLevel(std::string levelKeep, std::string levelDicard) {
@@ -267,3 +213,5 @@ class $modify(WREditLevelLayer, EditLevelLayer) {
 		}
 	}
 };
+
+
