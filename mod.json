@@ -40,6 +40,17 @@
             "name": "Enable Dynamic Winrate",
             "type": "bool",
             "default": true
+        },
+        "settings-alpha": {
+            "name": "Alpha value",
+            "description": "Alpha determines how fast your winrate changes. A lower alpha results in a slower but more stable rate. A higher Alpha results in faster changes but is less stable. I would not recommend going much higher than the default 0.15 but you could potentially decrease it if you are playing levels longterm.",
+            "type": "float",
+            "default": 0.15,
+            "min": 0.001,
+            "max": 0.5,
+            "control": {
+                "slider": true
+            }
         }
 	},"resources": {
         "sprites": [
