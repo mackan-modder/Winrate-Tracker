@@ -10,7 +10,7 @@ bool WRStatsMenu::init() {
         return false;
     }
 
-    this->setTitle("Stats Menu");
+    this->setTitle("Winrate Stats Menu");
     this->setID("WR-Stats-Menu"_spr);
 
     // auto label = CCLabelBMFont::create("Winrate Tracker Menu", "bigFont.fnt");
@@ -148,7 +148,8 @@ void WRStatsMenu::onImpact(CCObject*) {
         double impact = std::abs(expectedTimeNormal-expectedTimeChanged);
         
         
-        levelsString += formatTime(impact) + " / " + std::format("{:.2f}",impact/expectedTimeNormal*100) + "\%";
+        // levelsString += formatTime(impact) + " / " + std::format("{:.2f}",impact/expectedTimeNormal*100) + "\%";
+        levelsString += std::format("{:.2f}",impact/expectedTimeNormal*100) + "\%";
         levelsString += "\n";
     }
     
