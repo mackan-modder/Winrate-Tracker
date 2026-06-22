@@ -53,7 +53,7 @@ bool WRStatsMenu::init() {
     // m_buttonStats->setVisible(true);
     // myMenuContent->addChildAtPosition(m_buttonStats,Anchor::Top);
 
-    auto spriteImpact = ButtonSprite::create("Passrate Times");
+    auto spriteImpact = ButtonSprite::create("Possible Improvements");
     m_buttonImpact = CCMenuItemSpriteExtra::create(
         spriteImpact,
         nullptr,

@@ -20,6 +20,7 @@ class $modify(WRPlayLayer, PlayLayer){
 		bool m_scheduleLinkPopup = false;
 		std::string m_linkLevelName;
 		double m_currentWinrate;
+		double m_currentWinrateStartpos;
 		double m_currentTime;
 		bool m_measuringTimeLength;
 		float m_currentMeasurement;
@@ -29,6 +30,7 @@ class $modify(WRPlayLayer, PlayLayer){
 		int m_endOfSafeZone = -1;
 		CCNodeRGBA* m_parentContainer = nullptr;
 		CCLabelBMFont* m_winrateLabel = nullptr;
+		CCLabelBMFont* m_rarityLabel = nullptr;
 		CCLabelBMFont* m_winrateLabelFlat = nullptr;
 		std::string m_winrateLabelFlatString;
 		CCLabelBMFont* m_completionTimeLabel = nullptr;
@@ -128,6 +130,15 @@ class $modify(WRPlayLayer, PlayLayer){
 			
 			m_fields->m_parentContainer->updateLayout();
 		}
+		if (Mod::get()->getSettingValue<bool>("rarity-label")) {
+			m_fields->m_rarityLabel = CCLabelBMFont::create("Run Rarity is TEST", "bigFont.fnt");
+
+			m_fields->m_parentContainer->addChild(m_fields->m_rarityLabel);
+
+			m_fields->m_rarityLabel->setAnchorPoint({0,0});
+			
+			m_fields->m_parentContainer->updateLayout();
+		}
 		if (Mod::get()->getSettingValue<bool>("winrate-flat")) {
 			m_fields->m_winrateLabelFlat = CCLabelBMFont::create("Winrate is TEST", "bigFont.fnt");
 
@@ -149,7 +160,6 @@ class $modify(WRPlayLayer, PlayLayer){
 
 		m_fields->m_parentContainer->updateLayout();
 
-		updateStaticTextLabels();
 
 		auto lastElementWithZeroData = std::find(m_fields->m_percentageDataCount.begin(),m_fields->m_percentageDataCount.end(),0);
 		int lastIndexWinrate = lastElementWithZeroData-m_fields->m_percentageDataCount.begin()+1;
@@ -161,7 +171,8 @@ class $modify(WRPlayLayer, PlayLayer){
 
 
 		if (m_fields->m_parentContainer) { // My way of checking for init()
-			updateStaticTextLabels();
+			updateStaticTextLabels();	
+			updateStartposWinrate();
 			m_fields->m_currentMeasurement = 0;
 			m_fields->m_currentIndex = getCurrentPercentInt();
 			m_fields->m_currentIndexActive = (getCurrentPercent()==0.0) ? true : false;
@@ -220,13 +231,30 @@ class $modify(WRPlayLayer, PlayLayer){
 		
 		if (m_fields->m_parentContainer) { // My way of checking for init()
 			updateStaticTextLabels();
+			updateStartposWinrate();
 			m_fields->m_currentMeasurement = 0;
 			m_fields->m_currentIndex = getCurrentPercentInt();
 			m_fields->m_currentIndexActive = (getCurrentPercent()==0.0) ? true : false;
 			m_fields->m_endOfSafeZone = -1;
 			m_fields->m_startingPercentage = getCurrentPercentInt();
+
 			log::info("reset {}",getCurrentPercentInt());
 		}
+	}
+
+	void updateStartposWinrate() {
+		auto lastElementWithZeroData = std::find(m_fields->m_percentageDataCount.begin(),m_fields->m_percentageDataCount.end(),0);
+		int lastIndex = lastElementWithZeroData-m_fields->m_percentageDataCount.begin();
+
+		double interpolation 
+		= (static_cast<double>(getCurrentPercent()) 
+		- static_cast<double>(getCurrentPercentInt()));
+
+		double interpolatedWinrate 
+		= calculateWinrate( getCurrentPercentInt(), lastIndex+1)*(1.0-interpolation)
+		+ calculateWinrate( getCurrentPercentInt()+1, lastIndex+1)*interpolation;
+
+		m_fields->m_currentWinrateStartpos = interpolatedWinrate;
 	}
 
     double calculateWinrate(int start, int end) {
@@ -384,15 +412,6 @@ class $modify(WRPlayLayer, PlayLayer){
 		// Initial higher alpha
         m_fields->m_percentageDataCount[index]++;
 		
-		/*
-			I'm removing this since it works to well, we want to stay optimistic 
-			with the player since they do improve very quickly
-		*/
-        // float localAlpha = 2.0/(m_fields->m_percentageDataCount[index]*0.5+3.5);
-        // if (localAlpha<ALPHA) {
-        //     localAlpha = ALPHA;
-        // }
-		
 		if (passed) {
 			m_fields->m_percentageWinrate[index] = m_fields->m_alpha + m_fields->m_percentageWinrate[index]*(1.0f-m_fields->m_alpha);
 		} else {
@@ -403,10 +422,51 @@ class $modify(WRPlayLayer, PlayLayer){
 	void updateDynamicTextLabels() {
 		auto lastElementWithZeroData = std::find(m_fields->m_percentageDataCount.begin(),m_fields->m_percentageDataCount.end(),0);
 		int lastIndex = lastElementWithZeroData-m_fields->m_percentageDataCount.begin();
-		m_fields->m_winrateLabel->setString((assembleWinrateText(getCurrentPercentInt(),lastIndex,true)).c_str());
-		m_fields->m_parentContainer->updateLayout();
+		if (m_fields->m_winrateLabel) {
+			m_fields->m_winrateLabel->setString((assembleWinrateText(getCurrentPercentInt(),lastIndex,true)).c_str());
+			m_fields->m_parentContainer->updateLayout();
+		}
 
+		if (m_fields->m_rarityLabel) {
+			m_fields->m_rarityLabel->setString((assembleRarityText(lastIndex)).c_str());
+			m_fields->m_parentContainer->updateLayout();
+		}
 	}
+
+	std::string assembleRarityText(int lastIndex) {
+		std::string returnString = "";
+		returnString += "Run Rarity: ";
+
+		if (getCurrentPercentInt()==100) {
+			return returnString + "?";
+		}
+
+		if (getCurrentPercentInt()>=lastIndex) {
+			return returnString + "?";
+		}
+
+		double interpolation 
+		= (static_cast<double>(getCurrentPercent()) 
+		- static_cast<double>(getCurrentPercentInt()));
+
+		double interpolatedWinrate 
+		= calculateWinrate( getCurrentPercentInt(), lastIndex+1)*(1.0-interpolation)
+		+ calculateWinrate( getCurrentPercentInt()+1, lastIndex+1)*interpolation;
+
+		if (interpolatedWinrate==0) return returnString += "?";
+
+		double rarityWinrate = m_fields->m_currentWinrateStartpos/interpolatedWinrate;
+
+		if (rarityWinrate==0.0) {
+			return returnString += "1 in Infinity";
+		}  else {
+			returnString += "1 in " + formatLargeNumbers((1.0/rarityWinrate));
+		}
+
+		return returnString;
+	}
+
+
 
 	void updateStaticTextLabels() {
 		auto lastElementWithZeroData = std::find(m_fields->m_percentageDataCount.begin(),m_fields->m_percentageDataCount.end(),0);
@@ -513,7 +573,7 @@ class $modify(WRPlayLayer, PlayLayer){
 
 	void postUpdate(float dt) {
 
-		if (m_fields->m_winrateLabel) updateDynamicTextLabels();
+		updateDynamicTextLabels();
 
 		if (m_fields->m_measuringTimeLength){
 			measureTimeUpdate(dt);
@@ -521,7 +581,8 @@ class $modify(WRPlayLayer, PlayLayer){
 
 		// Logic for adding a safe region in the beginning of each attempt 
 		// from practice mode or startpos.
-		if (m_fields->m_endOfSafeZone == -1 && m_attemptTime>1.2) {
+		const double safeTime = 1.6;
+		if (m_fields->m_endOfSafeZone == -1 && m_attemptTime>safeTime) {
 			m_fields->m_endOfSafeZone = getCurrentPercentInt()+1;
 		}
 
