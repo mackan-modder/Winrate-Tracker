@@ -393,7 +393,7 @@ class $modify(WRPlayLayer, PlayLayer){
 	void updateWinrate(int start, int end) {
 		
         log::info("updateWinrate({},{})",start,end);
-		if (start==-1) {
+		if (start==-1 || (end<start)) {
 			// log::info("SafeZoned!");
 			return;
 		}
@@ -437,9 +437,7 @@ class $modify(WRPlayLayer, PlayLayer){
 		std::string returnString = "";
 		returnString += "Run Rarity: ";
 
-		if (getCurrentPercentInt()==100) {
-			return returnString + "?";
-		}
+		1
 
 		if (getCurrentPercentInt()>=lastIndex) {
 			return returnString + "?";
@@ -584,6 +582,7 @@ class $modify(WRPlayLayer, PlayLayer){
 		const double safeTime = 1.6;
 		if (m_fields->m_endOfSafeZone == -1 && m_attemptTime>safeTime) {
 			m_fields->m_endOfSafeZone = getCurrentPercentInt()+1;
+			log::info("{}",m_fields->m_endOfSafeZone);
 		}
 
 		PlayLayer::postUpdate(dt);
