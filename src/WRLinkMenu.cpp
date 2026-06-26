@@ -91,10 +91,10 @@ bool WRLinkMenu::init() {
 
 
     // Finding if the the current level is already linked with the previous
-    gd::set<gd::string> currentLinkedList = Mod::get()->getSavedValue<gd::set<gd::string>>(m_idCurrent + "-linked");
+    gd::set<std::string> currentLinkedList = Mod::get()->getSavedValue<gd::set<std::string>>(m_idCurrent + "-linked");
 
     m_isLinked = false;
-    for (gd::string id : currentLinkedList) {
+    for (std::string id : currentLinkedList) {
         if (id==m_idPrevious) m_isLinked = true;
     }
 
@@ -102,7 +102,7 @@ bool WRLinkMenu::init() {
 }
 
 
-WRLinkMenu* WRLinkMenu::create(gd::string idCurrent, gd::string nameCurrent, gd::string idPrevious, gd::string namePrevious) {
+WRLinkMenu* WRLinkMenu::create(std::string idCurrent, std::string nameCurrent, std::string idPrevious, std::string namePrevious) {
     auto ret = new WRLinkMenu();
     ret->m_idCurrent = idCurrent;
     ret->m_nameCurrent = nameCurrent;
@@ -155,19 +155,19 @@ void WRLinkMenu::onUnLinkCurrent(CCObject*) {
 
 void WRLinkMenu::onLinkedList(CCObject*){
 
-    gd::set<gd::string> linkedList = Mod::get()->getSavedValue<gd::set<gd::string>>(m_idCurrent+"-linked");
+    gd::set<std::string> linkedList = Mod::get()->getSavedValue<gd::set<std::string>>(m_idCurrent+"-linked");
     linkedList.erase(m_idCurrent);
 
-    gd::set<gd::string>::iterator id;
+    gd::set<std::string>::iterator id;
 
     
 
-    gd::string levelsString = m_nameCurrent + " is linked with:\n";
+    std::string levelsString = m_nameCurrent + " is linked with:\n";
 
     int size = linkedList.size();
     int i = 0;
     for (id = linkedList.begin(); id != linkedList.end(); id++) {
-        gd::string localString = Mod::get()->getSavedValue<gd::string>(*id + "-levelname", "");
+        std::string localString = Mod::get()->getSavedValue<std::string>(*id + "-levelname", "");
         if (localString!="") {
             levelsString += localString;
         } else {
@@ -202,7 +202,7 @@ void WRLinkMenu::onResetWinrate(CCObject*) {
         "Cancel", "Reset",      // buttons
         [this](auto, bool btn2) {
             if (btn2) {
-                gd::string id = this->m_idCurrent;
+                std::string id = this->m_idCurrent;
 
                 std::array<float,100> defaultWinrate;
                 std::array<int,100> defaultDataCount;
@@ -273,13 +273,13 @@ void WRLinkMenu::linkPopup2() {
 		);
     }
 
-void WRLinkMenu::unlinkLevel(gd::string level) {
-    auto oldLinked = Mod::get()->getSavedValue<gd::set<gd::string>>(level + "-linked");
-    gd::set<gd::string> empty;
+void WRLinkMenu::unlinkLevel(std::string level) {
+    auto oldLinked = Mod::get()->getSavedValue<gd::set<std::string>>(level + "-linked");
+    gd::set<std::string> empty;
     empty.insert(level);
     oldLinked.erase(level);
     Mod::get()->setSavedValue(level + "-linked", empty);
-    for (gd::string id : oldLinked) {
+    for (std::string id : oldLinked) {
         Mod::get()->setSavedValue(id + "-linked", oldLinked);
     }
 
@@ -288,14 +288,14 @@ void WRLinkMenu::unlinkLevel(gd::string level) {
 
 
 
-void WRLinkMenu::linkLevel(gd::string levelKeep, gd::string levelDicard) {
-    auto dataLevelKeep = Mod::get()->getSavedValue<gd::set<gd::string>>(levelKeep + "-linked");
+void WRLinkMenu::linkLevel(std::string levelKeep, std::string levelDicard) {
+    auto dataLevelKeep = Mod::get()->getSavedValue<gd::set<std::string>>(levelKeep + "-linked");
     dataLevelKeep.insert(levelKeep);
 
-    auto dataLevelDicard = Mod::get()->getSavedValue<gd::set<gd::string>>(levelDicard + "-linked");
+    auto dataLevelDicard = Mod::get()->getSavedValue<gd::set<std::string>>(levelDicard + "-linked");
     dataLevelDicard.insert(levelDicard);
 
-    for (gd::string id : dataLevelDicard) {
+    for (std::string id : dataLevelDicard) {
         dataLevelKeep.insert(id);
     }
 
@@ -314,7 +314,7 @@ void WRLinkMenu::linkLevel(gd::string levelKeep, gd::string levelDicard) {
     tempKeepDataCount = Mod::get()->getSavedValue<std::array<int,100>>(levelKeep + "-datacount", tempKeepDataCount);
     tempKeepTimeLength = Mod::get()->getSavedValue<std::array<float,100>>(levelKeep + "-timelength", tempKeepTimeLength);
 
-    for (gd::string id : dataLevelKeep) {
+    for (std::string id : dataLevelKeep) {
         Mod::get()->setSavedValue(id + "-winrate", tempKeepWinrate);
         Mod::get()->setSavedValue(id + "-datacount", tempKeepDataCount);
         Mod::get()->setSavedValue(id + "-timelength", tempKeepTimeLength);

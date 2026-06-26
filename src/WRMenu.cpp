@@ -79,7 +79,7 @@ bool WRMenu::init() {
 }
 
 
-WRMenu* WRMenu::create(gd::string idCurrent, gd::string nameCurrent, gd::string idPrevious, gd::string namePrevious) {
+WRMenu* WRMenu::create(std::string idCurrent, std::string nameCurrent, std::string idPrevious, std::string namePrevious) {
     auto ret = new WRMenu();
     ret->m_idCurrent = idCurrent;
     ret->m_nameCurrent = nameCurrent;
@@ -101,7 +101,7 @@ void WRMenu::onResetWinrate(CCObject*) {
         "Cancel", "Reset",      // buttons
         [this](auto, bool btn2) {
             if (btn2) {
-                gd::string id = this->m_idCurrent;
+                std::string id = this->m_idCurrent;
 
                 std::array<float,100> defaultWinrate;
                 std::array<int,100> defaultDataCount;

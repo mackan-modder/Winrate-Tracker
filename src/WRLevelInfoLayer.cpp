@@ -8,22 +8,22 @@ using namespace geode::prelude;
 
 class $modify(WRLevelInfoLayer, LevelInfoLayer) {
     struct Fields {
-        gd::string m_idCurrent = "1";
-        gd::string m_nameCurrent = "Stereo Madness";
-        gd::string m_idPrevious = "1";
-        gd::string m_namePrevious = "Stereo Madness";
+        std::string m_idCurrent = "1";
+        std::string m_nameCurrent = "Stereo Madness";
+        std::string m_idPrevious = "1";
+        std::string m_namePrevious = "Stereo Madness";
         CCMenuItemSpriteExtra* m_buttonMenu = nullptr;
 
         ~Fields() {
-            if (m_idCurrent!=m_idPrevious && m_idCurrent!=Mod::get()->getSavedValue<gd::string>("previous-level-id-backup","1")) {
+            if (m_idCurrent!=m_idPrevious && m_idCurrent!=Mod::get()->getSavedValue<std::string>("previous-level-id-backup","1")) {
                 Mod::get()->setSavedValue("previous-level-id-backup", m_idPrevious);
                 Mod::get()->setSavedValue("previous-level-name-backup", m_namePrevious);
                 
                 Mod::get()->setSavedValue("previous-level-id", m_idCurrent);
                 Mod::get()->setSavedValue("previous-level-name", m_nameCurrent);
-            } else if (m_idCurrent==Mod::get()->getSavedValue<gd::string>("previous-level-id-backup","1")) {
-                gd::string backupId = Mod::get()->getSavedValue<gd::string>("previous-level-id-backup","1");
-                gd::string backupName = Mod::get()->getSavedValue<gd::string>("previous-level-name-backup","1");
+            } else if (m_idCurrent==Mod::get()->getSavedValue<std::string>("previous-level-id-backup","1")) {
+                std::string backupId = Mod::get()->getSavedValue<std::string>("previous-level-id-backup","1");
+                std::string backupName = Mod::get()->getSavedValue<std::string>("previous-level-name-backup","1");
 
                 Mod::get()->setSavedValue("previous-level-id-backup", m_idPrevious);
                 Mod::get()->setSavedValue("previous-level-name-backup", m_namePrevious);
@@ -45,12 +45,12 @@ class $modify(WRLevelInfoLayer, LevelInfoLayer) {
         m_fields->m_idCurrent = fmt::to_string(ourLevelId);
         m_fields->m_nameCurrent = level->m_levelName;
         
-        m_fields->m_idPrevious = Mod::get()->getSavedValue<gd::string>("previous-level-id","1");
-        m_fields->m_namePrevious = Mod::get()->getSavedValue<gd::string>("previous-level-name","Stereo Madness");
+        m_fields->m_idPrevious = Mod::get()->getSavedValue<std::string>("previous-level-id","1");
+        m_fields->m_namePrevious = Mod::get()->getSavedValue<std::string>("previous-level-name","Stereo Madness");
 
         if (m_fields->m_idPrevious==m_fields->m_idCurrent) {
-            m_fields->m_idPrevious = Mod::get()->getSavedValue<gd::string>("previous-level-id-backup","1");
-            m_fields->m_namePrevious = Mod::get()->getSavedValue<gd::string>("previous-level-name-backup","Stereo Madness");
+            m_fields->m_idPrevious = Mod::get()->getSavedValue<std::string>("previous-level-id-backup","1");
+            m_fields->m_namePrevious = Mod::get()->getSavedValue<std::string>("previous-level-name-backup","Stereo Madness");
         }
 
         // auto spr = ButtonSprite::create("Link");

@@ -6,10 +6,10 @@ using namespace geode::prelude;
 
 class WRStatsMenu : public geode::Popup {
 protected:
-    gd::string m_idCurrent = "1";
-    gd::string m_nameCurrent = "Stereo Madness";
-    gd::string m_idPrevious = "1";
-    gd::string m_namePrevious = "Stereo Madness";
+    std::string m_idCurrent = "1";
+    std::string m_nameCurrent = "Stereo Madness";
+    std::string m_idPrevious = "1";
+    std::string m_namePrevious = "Stereo Madness";
     CCMenuItemSpriteExtra* m_buttonPass = nullptr;
     CCMenuItemSpriteExtra* m_buttonImpact = nullptr;
     CCMenuItemSpriteExtra* m_buttonStats = nullptr;
@@ -20,10 +20,10 @@ protected:
     void onImpact(CCObject*);
     void onStats(CCObject*);
 
-    gd::string formatLargeNumbers(double number);
-    gd::string formatTime(double time);
+    std::string formatLargeNumbers(double number);
+    std::string formatTime(double time);
 
 public:
-    static WRStatsMenu* create(gd::string idCurrent, gd::string nameCurrent);
+    static WRStatsMenu* create(std::string idCurrent, std::string nameCurrent);
 
 };
