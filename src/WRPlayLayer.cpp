@@ -13,7 +13,7 @@ class $modify(WRPlayLayer, PlayLayer){
         std::array<int,100> m_percentageDataCount;
 		std::array<float,100> m_percentageTimeLength;
 		// m_linkedLevels includes the level we are in and other linked levels
-		std::set<gd::string> m_linkedLevels; 
+		gd::set<gd::string> m_linkedLevels; 
 		gd::string m_levelId;
 		gd::string m_levelName;
 		float m_alpha; 
@@ -66,21 +66,21 @@ class $modify(WRPlayLayer, PlayLayer){
 			ourLevelId = EditorIDs::getID(level);
 		}
 
-		gd::string levelId = std::to_string(ourLevelId);
+		gd::string levelId = fmt::to_string(ourLevelId);
 
 		// Saving the levelID to use when saving the data later
 
 		m_fields->m_percentageWinrate = Mod::get()->getSavedValue<std::array<float,100>>(levelId + "-winrate", m_fields->m_percentageWinrate);
 		m_fields->m_percentageDataCount = Mod::get()->getSavedValue<std::array<int,100>>(levelId+ "-datacount", m_fields->m_percentageDataCount);
 		m_fields->m_percentageTimeLength = Mod::get()->getSavedValue<std::array<float,100>>(levelId + "-timelength", m_fields->m_percentageTimeLength);
-		m_fields->m_linkedLevels = Mod::get()->getSavedValue<std::set<gd::string>>(levelId + "-linked", m_fields->m_linkedLevels);
+		m_fields->m_linkedLevels = Mod::get()->getSavedValue<gd::set<gd::string>>(levelId + "-linked", m_fields->m_linkedLevels);
 
 		m_fields->m_linkedLevels.insert(levelId);
 		m_fields->m_levelId = levelId;
 
 
 		// Saving the id in a list here we can loop through later
-		auto dataAll = Mod::get()->getSavedValue<std::set<gd::string>>("all-level-ids");
+		auto dataAll = Mod::get()->getSavedValue<gd::set<gd::string>>("all-level-ids");
 		dataAll.insert(levelId);
 		Mod::get()->setSavedValue("all-level-ids", dataAll);
 
@@ -259,114 +259,74 @@ class $modify(WRPlayLayer, PlayLayer){
         return expectedTime;
     }
 
-	gd::string assembleWinrateText(int firstIndex, int lastIndex, bool dynamic){
-		gd::string returnString = "";
-		returnString += "Winrate";
-
-		if (dynamic) returnString += " now" ;
-
-		if (lastIndex<100) {
-			returnString += " to " + std::to_string(std::max({0,lastIndex-1})) + "%";
-		}
-
-		returnString += ": ";
-
-		if (getCurrentPercentInt()==100) {
-			return returnString + "100%";
-		}
-
-		if (getCurrentPercentInt()>=lastIndex) {
-			return returnString + "?";
-		}
-
-		
-		double interpolation 
-		= (dynamic) ? (static_cast<double>(getCurrentPercent()) 
-		- static_cast<double>(firstIndex)) : 0.0;
-
-		double interpolatedWinrate 
-		= calculateWinrate( firstIndex, lastIndex+1)*(1.0-interpolation)
-		+ calculateWinrate( firstIndex+1, lastIndex+1)*interpolation;
-
-		
-
-		if (interpolatedWinrate==0.0) {
-			return returnString += "1 in Infinity";
-		} else if (interpolatedWinrate>0.1) {
-			returnString += std::format("{:.3g}", interpolatedWinrate*100) + "%";
-		} else {
-			returnString += "1 in " + formatLargeNumbers((1.0/interpolatedWinrate));
-		}
-
-		return returnString;
-	}
+	
 
 	gd::string formatLargeNumbers(double number) {
 
 		if (number<1000.0) {
-			return std::format("{:.3g}",number);
+			return fmt::format("{:.3g}",number);
 		} else if (number<MILLION) {
 			number /= THOUSAND;
-			return std::format("{:.3g}",number) + " thousand";
+			return fmt::format("{:.3g}",number) + " thousand";
 		} else if (number<BILLION) {
 			number /= MILLION;
-			return std::format("{:.3g}",number) + " million";
+			return fmt::format("{:.3g}",number) + " million";
 		} else if (number<TRILLION) {
 			number /= BILLION;
-			return std::format("{:.3g}",number) + " billion";
+			return fmt::format("{:.3g}",number) + " billion";
 		} else if (number<QUADRILLION) {
 			number /= TRILLION;
-			return std::format("{:.3g}",number) + " trillion";
+			return fmt::format("{:.3g}",number) + " trillion";
 		} else if (number<QUINTILLION) {
 			number /= QUADRILLION;
-			return std::format("{:.3g}",number) + " quadrillion";
+			return fmt::format("{:.3g}",number) + " quadrillion";
 		} else if (number<SEXTILLION) {
 			number /= QUINTILLION;
-			return std::format("{:.3g}",number) + " quintillion";
+			return fmt::format("{:.3g}",number) + " quintillion";
 		} else if (number<SEPTILLION) {
 			number /= SEXTILLION;
-			return std::format("{:.3g}",number) + " sextillion";
+			return fmt::format("{:.3g}",number) + " sextillion";
 		} else if (number<OCTILLION) {
 			number /= SEPTILLION;
-			return std::format("{:.3g}",number) + " septillion";
+			return fmt::format("{:.3g}",number) + " septillion";
 		} else if (number<NONILLION) {
 			number /= OCTILLION;
-			return std::format("{:.3g}",number) + " octillion";
+			return fmt::format("{:.3g}",number) + " octillion";
 		} else if (number<DECILLION) {
 			number /= NONILLION;
-			return std::format("{:.3g}",number) + " nonillion";
+			return fmt::format("{:.3g}",number) + " nonillion";
 		} else if (number<UNDECILLION) {
 			number /= DECILLION;
-			return std::format("{:.3g}",number) + " decillion";
+			return fmt::format("{:.3g}",number) + " decillion";
 		} else if (number<DUODECILLION) {
 			number /= UNDECILLION;
-			return std::format("{:.3g}",number) + " undecillion";
+			return fmt::format("{:.3g}",number) + " undecillion";
 		} else if (number<TREDECILLION) {
 			number /= DUODECILLION;
-			return std::format("{:.3g}",number) + " duodecillion";
+			return fmt::format("{:.3g}",number) + " duodecillion";
 		} else if (number<QUATTUORDECILLION) {
 			number /= TREDECILLION;
-			return std::format("{:.3g}",number) + " tredecillion";
+			return fmt::format("{:.3g}",number) + " tredecillion";
 		} else if (number<QUINDECILLION) {
 			number /= QUATTUORDECILLION;
-			return std::format("{:.3g}",number) + " quattuordecillion";
+			return fmt::format("{:.3g}",number) + " quattuordecillion";
 		} else if (number<SEXDECILLION) {
 			number /= QUINDECILLION;
-			return std::format("{:.3g}",number) + " quindecillion";
+			return fmt::format("{:.3g}",number) + " quindecillion";
 		} else if (number<SEPTENDECILLION) {
 			number /= SEXDECILLION;
-			return std::format("{:.3g}",number) + " sexdecillion";
+			return fmt::format("{:.3g}",number) + " sexdecillion";
 		} else if (number<OCTODECILLION) {
 			number /= SEPTENDECILLION;
-			return std::format("{:.3g}",number) + " septendecillion";
+			return fmt::format("{:.3g}",number) + " septendecillion";
 		} else if (number<NOVEMDECILLION) {
 			number /= OCTODECILLION;
-			return std::format("{:.3g}",number) + " octodecillion";
+			return fmt::format("{:.3g}",number) + " octodecillion";
 		} else if (number<VIGINTILLION) {
 			number /= NOVEMDECILLION;
-			return std::format("{:.3g}",number) + " novemdecillion";
+			return fmt::format("{:.3g}",number) + " novemdecillion";
 		} else {
-			return std::format("{:.3g}",number) ;
+			return fmt::format("{:.3g}",number) ;
 		}
 
 		return "";
@@ -416,6 +376,65 @@ class $modify(WRPlayLayer, PlayLayer){
 			m_fields->m_rarityLabel->setString((assembleRarityText(lastIndex)).c_str());
 			m_fields->m_parentContainer->updateLayout();
 		}
+	}
+
+	gd::string assembleWinrateText(int firstIndex, int lastIndex, bool dynamic){
+		gd::string returnString = "";
+		returnString += "Winrate";
+
+		if (dynamic) returnString += " now" ;
+
+		if (lastIndex<100) {
+			returnString += " to " + fmt::to_string(std::max({0,lastIndex-1})) + "%";
+		}
+
+		returnString += ": ";
+
+		if (getCurrentPercentInt()==100) {
+			return returnString + "100%";
+		}
+
+		if (getCurrentPercentInt()>=lastIndex) {
+			return returnString + "?";
+		}
+
+		
+		double interpolation 
+		= (dynamic) ? (static_cast<double>(getCurrentPercent()) 
+		- static_cast<double>(firstIndex)) : 0.0;
+
+		double interpolatedWinrate 
+		= calculateWinrate( firstIndex, lastIndex+1)*(1.0-interpolation)
+		+ calculateWinrate( firstIndex+1, lastIndex+1)*interpolation;
+
+		
+
+		if (interpolatedWinrate==0.0) {
+			return returnString += "1 in Infinity";
+		} else if (interpolatedWinrate>0.1) {
+			returnString += fmt::format("{:.3g}", interpolatedWinrate*100) + "%";
+		} else {
+			returnString += "1 in " + formatLargeNumbers((1.0/interpolatedWinrate));
+		}
+
+		return returnString;
+	}
+
+	gd::string assembleCompletionTimeText() {
+		gd::string returnString = "Time";
+
+		auto lastValidIterator = std::find(m_fields->m_percentageTimeLength.begin(),m_fields->m_percentageTimeLength.end(),-1);
+		int lastIndex = lastValidIterator-m_fields->m_percentageTimeLength.begin();
+
+		returnString += " for " + fmt::to_string(std::max({0,lastIndex-1})) + "%";
+
+		returnString += ": ";
+
+		double time = calculateTimeToComplete(lastIndex);
+
+		returnString += (time != 1.0) ? formatTime(time) : "?";
+
+		return returnString;
 	}
 
 	gd::string assembleRarityText(int lastIndex) {
@@ -510,24 +529,7 @@ class $modify(WRPlayLayer, PlayLayer){
 		m_fields->m_parentContainer->updateLayout();
 	}	
 
-	gd::string assembleCompletionTimeText() {
-		gd::string returnString = "Time";
-
-		auto lastValidIterator = std::find(m_fields->m_percentageTimeLength.begin(),m_fields->m_percentageTimeLength.end(),-1);
-		int lastIndex = lastValidIterator-m_fields->m_percentageTimeLength.begin();
-
-		if (lastIndex<100) {
-			returnString += " to " + std::to_string(std::max({0,lastIndex-1})) + "%";
-		}
-
-		returnString += ": Every ";
-
-		double time = calculateTimeToComplete(lastIndex);
-
-		returnString += (time != 1.0) ? formatTime(time) : "?";
-
-		return returnString;
-	}
+	
 
 	gd::string formatTime(double time) {
 		gd::string timeUnit;
@@ -540,18 +542,18 @@ class $modify(WRPlayLayer, PlayLayer){
 			timeUnit = "years";
 		} else if (time>60*60*24) {
 			time /= 60*60*24;
-			timeString = std::format("{:.3g}",time);
+			timeString = fmt::format("{:.3g}",time);
 			timeUnit = "days";
 		} else if (time>60*60) {
 			time /= 60*60;
-			timeString = std::format("{:.3g}",time);
+			timeString = fmt::format("{:.3g}",time);
 			timeUnit = "hours";
 		} else if (time>60) {
 			time /= 60;
-			timeString = std::format("{:.3g}",time);
+			timeString = fmt::format("{:.3g}",time);
 			timeUnit = "minutes";
 		} else {
-			timeString = std::format("{:.3g}",time);
+			timeString = fmt::format("{:.3g}",time);
 			timeUnit = "seconds";
 		}
 		

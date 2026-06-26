@@ -131,7 +131,7 @@ void WRStatsMenu::onImpact(CCObject*) {
     
 
     for (int i = 0;i<10;i++) {
-        levelsString += std::to_string(i*10) + "%-" + std::to_string(i*10+10) + "%: ";
+        levelsString += fmt::to_string(i*10) + "%-" + fmt::to_string(i*10+10) + "%: ";
         
         
         double expectedTimeChanged = 1; // We assume respawn time is 1 second
@@ -148,8 +148,8 @@ void WRStatsMenu::onImpact(CCObject*) {
         double impact = std::abs(expectedTimeNormal-expectedTimeChanged);
         
         
-        // levelsString += formatTime(impact) + " / " + std::format("{:.2f}",impact/expectedTimeNormal*100) + "\%";
-        levelsString += std::format("{:.2f}",impact/expectedTimeNormal*100) + "\%";
+        // levelsString += formatTime(impact) + " / " + fmt::format("{:.2f}",impact/expectedTimeNormal*100) + "\%";
+        levelsString += fmt::format("{:.2f}",impact/expectedTimeNormal*100) + "\%";
         levelsString += "\n";
     }
     
@@ -173,7 +173,7 @@ void WRStatsMenu::onPass(CCObject*) {
     gd::string levelsString = m_nameCurrent + " has passrates:\n";
 
     for (int i = 0;i<10;i++) {
-        levelsString += std::to_string(i*10) + "%-" + std::to_string(i*10+10) + "%: ";
+        levelsString += fmt::to_string(i*10) + "%-" + fmt::to_string(i*10+10) + "%: ";
         double product = 1;
         for (int j = 0;j<10;j++) {
             product *= static_cast<double>(winrate[i*10+j]);
@@ -181,7 +181,7 @@ void WRStatsMenu::onPass(CCObject*) {
         if (product<0.01 && product!=0) {
             levelsString += "1 in " + formatLargeNumbers(1/product);
         } else {
-            levelsString += std::format("{:.2g}",product*100) + "%";
+            levelsString += fmt::format("{:.2g}",product*100) + "%";
         }
         levelsString += "\n";
     }
@@ -203,69 +203,69 @@ void WRStatsMenu::onStats(CCObject*) {
 
 gd::string WRStatsMenu::formatLargeNumbers(double number) {
     if (number<1000.0) {
-        return std::format("{:.3g}",number);
+        return fmt::format("{:.3g}",number);
     } else if (number<MILLION) {
         number /= THOUSAND;
-        return std::format("{:.3g}",number) + " thousand";
+        return fmt::format("{:.3g}",number) + " thousand";
     } else if (number<BILLION) {
         number /= MILLION;
-        return std::format("{:.3g}",number) + " million";
+        return fmt::format("{:.3g}",number) + " million";
     } else if (number<TRILLION) {
         number /= BILLION;
-        return std::format("{:.3g}",number) + " billion";
+        return fmt::format("{:.3g}",number) + " billion";
     } else if (number<QUADRILLION) {
         number /= TRILLION;
-        return std::format("{:.3g}",number) + " trillion";
+        return fmt::format("{:.3g}",number) + " trillion";
     } else if (number<QUINTILLION) {
         number /= QUADRILLION;
-        return std::format("{:.3g}",number) + " quadrillion";
+        return fmt::format("{:.3g}",number) + " quadrillion";
     } else if (number<SEXTILLION) {
         number /= QUINTILLION;
-        return std::format("{:.3g}",number) + " quintillion";
+        return fmt::format("{:.3g}",number) + " quintillion";
     } else if (number<SEPTILLION) {
         number /= SEXTILLION;
-        return std::format("{:.3g}",number) + " sextillion";
+        return fmt::format("{:.3g}",number) + " sextillion";
     } else if (number<OCTILLION) {
         number /= SEPTILLION;
-        return std::format("{:.3g}",number) + " septillion";
+        return fmt::format("{:.3g}",number) + " septillion";
     } else if (number<NONILLION) {
         number /= OCTILLION;
-        return std::format("{:.3g}",number) + " octillion";
+        return fmt::format("{:.3g}",number) + " octillion";
     } else if (number<DECILLION) {
         number /= NONILLION;
-        return std::format("{:.3g}",number) + " nonillion";
+        return fmt::format("{:.3g}",number) + " nonillion";
     } else if (number<UNDECILLION) {
         number /= DECILLION;
-        return std::format("{:.3g}",number) + " decillion";
+        return fmt::format("{:.3g}",number) + " decillion";
     } else if (number<DUODECILLION) {
         number /= UNDECILLION;
-        return std::format("{:.3g}",number) + " undecillion";
+        return fmt::format("{:.3g}",number) + " undecillion";
     } else if (number<TREDECILLION) {
         number /= DUODECILLION;
-        return std::format("{:.3g}",number) + " duodecillion";
+        return fmt::format("{:.3g}",number) + " duodecillion";
     } else if (number<QUATTUORDECILLION) {
         number /= TREDECILLION;
-        return std::format("{:.3g}",number) + " tredecillion";
+        return fmt::format("{:.3g}",number) + " tredecillion";
     } else if (number<QUINDECILLION) {
         number /= QUATTUORDECILLION;
-        return std::format("{:.3g}",number) + " quattuordecillion";
+        return fmt::format("{:.3g}",number) + " quattuordecillion";
     } else if (number<SEXDECILLION) {
         number /= QUINDECILLION;
-        return std::format("{:.3g}",number) + " quindecillion";
+        return fmt::format("{:.3g}",number) + " quindecillion";
     } else if (number<SEPTENDECILLION) {
         number /= SEXDECILLION;
-        return std::format("{:.3g}",number) + " sexdecillion";
+        return fmt::format("{:.3g}",number) + " sexdecillion";
     } else if (number<OCTODECILLION) {
         number /= SEPTENDECILLION;
-        return std::format("{:.3g}",number) + " septendecillion";
+        return fmt::format("{:.3g}",number) + " septendecillion";
     } else if (number<NOVEMDECILLION) {
         number /= OCTODECILLION;
-        return std::format("{:.3g}",number) + " octodecillion";
+        return fmt::format("{:.3g}",number) + " octodecillion";
     } else if (number<VIGINTILLION) {
         number /= NOVEMDECILLION;
-        return std::format("{:.3g}",number) + " novemdecillion";
+        return fmt::format("{:.3g}",number) + " novemdecillion";
     } else {
-        return std::format("{:.3g}",number) ;
+        return fmt::format("{:.3g}",number) ;
     }
 
     return "";
@@ -282,18 +282,18 @@ gd::string WRStatsMenu::formatTime(double time) {
         timeUnit = "years";
     } else if (time>60*60*24) {
         time /= 60*60*24;
-        timeString = std::format("{:.3g}",time);
+        timeString = fmt::format("{:.3g}",time);
         timeUnit = "days";
     } else if (time>60*60) {
         time /= 60*60;
-        timeString = std::format("{:.3g}",time);
+        timeString = fmt::format("{:.3g}",time);
         timeUnit = "hours";
     } else if (time>60) {
         time /= 60;
-        timeString = std::format("{:.3g}",time);
+        timeString = fmt::format("{:.3g}",time);
         timeUnit = "minutes";
     } else {
-        timeString = std::format("{:.3g}",time);
+        timeString = fmt::format("{:.3g}",time);
         timeUnit = "seconds";
     }
     

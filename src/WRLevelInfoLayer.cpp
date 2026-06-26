@@ -42,7 +42,7 @@ class $modify(WRLevelInfoLayer, LevelInfoLayer) {
 			ourLevelId = EditorIDs::getID(level);
 		}
 
-        m_fields->m_idCurrent = std::to_string(ourLevelId);
+        m_fields->m_idCurrent = fmt::to_string(ourLevelId);
         m_fields->m_nameCurrent = level->m_levelName;
         
         m_fields->m_idPrevious = Mod::get()->getSavedValue<gd::string>("previous-level-id","1");

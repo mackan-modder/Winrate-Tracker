@@ -91,7 +91,7 @@ bool WRLinkMenu::init() {
 
 
     // Finding if the the current level is already linked with the previous
-    std::set<gd::string> currentLinkedList = Mod::get()->getSavedValue<std::set<gd::string>>(m_idCurrent + "-linked");
+    gd::set<gd::string> currentLinkedList = Mod::get()->getSavedValue<gd::set<gd::string>>(m_idCurrent + "-linked");
 
     m_isLinked = false;
     for (gd::string id : currentLinkedList) {
@@ -155,10 +155,10 @@ void WRLinkMenu::onUnLinkCurrent(CCObject*) {
 
 void WRLinkMenu::onLinkedList(CCObject*){
 
-    std::set<gd::string> linkedList = Mod::get()->getSavedValue<std::set<gd::string>>(m_idCurrent+"-linked");
+    gd::set<gd::string> linkedList = Mod::get()->getSavedValue<gd::set<gd::string>>(m_idCurrent+"-linked");
     linkedList.erase(m_idCurrent);
 
-    std::set<gd::string>::iterator id;
+    gd::set<gd::string>::iterator id;
 
     
 
@@ -274,8 +274,8 @@ void WRLinkMenu::linkPopup2() {
     }
 
 void WRLinkMenu::unlinkLevel(gd::string level) {
-    auto oldLinked = Mod::get()->getSavedValue<std::set<gd::string>>(level + "-linked");
-    std::set<gd::string> empty;
+    auto oldLinked = Mod::get()->getSavedValue<gd::set<gd::string>>(level + "-linked");
+    gd::set<gd::string> empty;
     empty.insert(level);
     oldLinked.erase(level);
     Mod::get()->setSavedValue(level + "-linked", empty);
@@ -289,10 +289,10 @@ void WRLinkMenu::unlinkLevel(gd::string level) {
 
 
 void WRLinkMenu::linkLevel(gd::string levelKeep, gd::string levelDicard) {
-    auto dataLevelKeep = Mod::get()->getSavedValue<std::set<gd::string>>(levelKeep + "-linked");
+    auto dataLevelKeep = Mod::get()->getSavedValue<gd::set<gd::string>>(levelKeep + "-linked");
     dataLevelKeep.insert(levelKeep);
 
-    auto dataLevelDicard = Mod::get()->getSavedValue<std::set<gd::string>>(levelDicard + "-linked");
+    auto dataLevelDicard = Mod::get()->getSavedValue<gd::set<gd::string>>(levelDicard + "-linked");
     dataLevelDicard.insert(levelDicard);
 
     for (gd::string id : dataLevelDicard) {
