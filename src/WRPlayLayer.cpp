@@ -13,7 +13,7 @@ class $modify(WRPlayLayer, PlayLayer){
         std::array<int,100> m_percentageDataCount;
 		std::array<float,100> m_percentageTimeLength;
 		// m_linkedLevels includes the level we are in and other linked levels
-		gd::set<std::string> m_linkedLevels; 
+		std::set<std::string> m_linkedLevels; 
 		std::string m_levelId;
 		std::string m_levelName;
 		float m_alpha; 
@@ -73,14 +73,14 @@ class $modify(WRPlayLayer, PlayLayer){
 		m_fields->m_percentageWinrate = Mod::get()->getSavedValue<std::array<float,100>>(levelId + "-winrate", m_fields->m_percentageWinrate);
 		m_fields->m_percentageDataCount = Mod::get()->getSavedValue<std::array<int,100>>(levelId+ "-datacount", m_fields->m_percentageDataCount);
 		m_fields->m_percentageTimeLength = Mod::get()->getSavedValue<std::array<float,100>>(levelId + "-timelength", m_fields->m_percentageTimeLength);
-		m_fields->m_linkedLevels = Mod::get()->getSavedValue<gd::set<std::string>>(levelId + "-linked", m_fields->m_linkedLevels);
+		m_fields->m_linkedLevels = Mod::get()->getSavedValue<std::set<std::string>>(levelId + "-linked", m_fields->m_linkedLevels);
 
 		m_fields->m_linkedLevels.insert(levelId);
 		m_fields->m_levelId = levelId;
 
 
 		// Saving the id in a list here we can loop through later
-		auto dataAll = Mod::get()->getSavedValue<gd::set<std::string>>("all-level-ids");
+		auto dataAll = Mod::get()->getSavedValue<std::set<std::string>>("all-level-ids");
 		dataAll.insert(levelId);
 		Mod::get()->setSavedValue("all-level-ids", dataAll);
 

@@ -91,7 +91,7 @@ bool WRLinkMenu::init() {
 
 
     // Finding if the the current level is already linked with the previous
-    gd::set<std::string> currentLinkedList = Mod::get()->getSavedValue<gd::set<std::string>>(m_idCurrent + "-linked");
+    std::set<std::string> currentLinkedList = Mod::get()->getSavedValue<std::set<std::string>>(m_idCurrent + "-linked");
 
     m_isLinked = false;
     for (std::string id : currentLinkedList) {
@@ -155,10 +155,10 @@ void WRLinkMenu::onUnLinkCurrent(CCObject*) {
 
 void WRLinkMenu::onLinkedList(CCObject*){
 
-    gd::set<std::string> linkedList = Mod::get()->getSavedValue<gd::set<std::string>>(m_idCurrent+"-linked");
+    std::set<std::string> linkedList = Mod::get()->getSavedValue<std::set<std::string>>(m_idCurrent+"-linked");
     linkedList.erase(m_idCurrent);
 
-    gd::set<std::string>::iterator id;
+    std::set<std::string>::iterator id;
 
     
 
@@ -274,8 +274,8 @@ void WRLinkMenu::linkPopup2() {
     }
 
 void WRLinkMenu::unlinkLevel(std::string level) {
-    auto oldLinked = Mod::get()->getSavedValue<gd::set<std::string>>(level + "-linked");
-    gd::set<std::string> empty;
+    auto oldLinked = Mod::get()->getSavedValue<std::set<std::string>>(level + "-linked");
+    std::set<std::string> empty;
     empty.insert(level);
     oldLinked.erase(level);
     Mod::get()->setSavedValue(level + "-linked", empty);
@@ -289,10 +289,10 @@ void WRLinkMenu::unlinkLevel(std::string level) {
 
 
 void WRLinkMenu::linkLevel(std::string levelKeep, std::string levelDicard) {
-    auto dataLevelKeep = Mod::get()->getSavedValue<gd::set<std::string>>(levelKeep + "-linked");
+    auto dataLevelKeep = Mod::get()->getSavedValue<std::set<std::string>>(levelKeep + "-linked");
     dataLevelKeep.insert(levelKeep);
 
-    auto dataLevelDicard = Mod::get()->getSavedValue<gd::set<std::string>>(levelDicard + "-linked");
+    auto dataLevelDicard = Mod::get()->getSavedValue<std::set<std::string>>(levelDicard + "-linked");
     dataLevelDicard.insert(levelDicard);
 
     for (std::string id : dataLevelDicard) {
