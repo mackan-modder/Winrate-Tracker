@@ -86,7 +86,7 @@ class $modify(WRPlayLayer, PlayLayer){
 
 		m_fields->m_levelName = level->m_levelName;
 
-		Mod::get()->setSavedValue(levelId + "-levelname",level->m_levelName);
+		Mod::get()->setSavedValue(levelId + "-levelname",m_fields->m_levelName);
 
 		for (std::string id : dataAll) {
 			log::info("{} 1 {}",id, Mod::get()->getSavedValue<std::string>(id + "-levelname", ""));
