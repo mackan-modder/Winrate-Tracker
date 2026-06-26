@@ -20,7 +20,7 @@ class $modify(WRPlayLayer, PlayLayer){
 		bool m_scheduleLinkPopup = false;
 		std::string m_linkLevelName;
 		double m_currentWinrate;
-		double m_currentWinrateStartpos;
+		double m_currentWinrateStartpos = -1;
 		double m_currentTime;
 		bool m_measuringTimeLength;
 		float m_currentMeasurement;
@@ -170,9 +170,9 @@ class $modify(WRPlayLayer, PlayLayer){
 		m_fields->m_currentTime = calculateTimeToComplete(lastIndexTime); 
 
 
-		if (m_fields->m_parentContainer) { // My way of checking for init()
+		if (m_fields->m_parentContainer) { 
 			updateStaticTextLabels();	
-			updateStartposWinrate();
+			m_fields->m_currentWinrateStartpos = -1;
 			m_fields->m_currentMeasurement = 0;
 			m_fields->m_currentIndex = getCurrentPercentInt();
 			m_fields->m_currentIndexActive = (getCurrentPercent()==0.0) ? true : false;
@@ -180,25 +180,6 @@ class $modify(WRPlayLayer, PlayLayer){
 			m_fields->m_startingPercentage = getCurrentPercentInt();
 			log::info("reset {}",getCurrentPercentInt());
 		}
-
-
-		// Until I find the motivation to learn menus and 
-		// and implement searching for levels to link, this is a fair solution
-		// imo
-		auto previousLevel = Mod::get()->getSavedValue<std::string>("previous-level", "");
-		auto previousLevelName = Mod::get()->getSavedValue<std::string>(previousLevel+"-levelname", "");
-
-		if (previousLevelName!=m_fields->m_levelName && previousLevelName != "" && m_fields->m_levelName != "") {
-			int minimumLength = static_cast<int>(std::min({previousLevelName.length(),m_fields->m_levelName.length(),static_cast<unsigned long long>(5)}));
-
-			if (previousLevelName.compare(0, minimumLength, previousLevelName)) {
-				m_fields->m_scheduleLinkPopup = true;
-				m_fields->m_linkLevelName = previousLevelName;
-			}
-		}
-
-
-		Mod::get()->setSavedValue("previous-level", levelId);
 
 		return true;
 	}
@@ -231,7 +212,7 @@ class $modify(WRPlayLayer, PlayLayer){
 		
 		if (m_fields->m_parentContainer) { // My way of checking for init()
 			updateStaticTextLabels();
-			updateStartposWinrate();
+			m_fields->m_currentWinrateStartpos = -1;
 			m_fields->m_currentMeasurement = 0;
 			m_fields->m_currentIndex = getCurrentPercentInt();
 			m_fields->m_currentIndexActive = (getCurrentPercent()==0.0) ? true : false;
@@ -242,6 +223,7 @@ class $modify(WRPlayLayer, PlayLayer){
 		}
 	}
 
+	// Stores the winrate at the start of the attempt, for use on run rarity
 	void updateStartposWinrate() {
 		auto lastElementWithZeroData = std::find(m_fields->m_percentageDataCount.begin(),m_fields->m_percentageDataCount.end(),0);
 		int lastIndex = lastElementWithZeroData-m_fields->m_percentageDataCount.begin();
@@ -428,6 +410,9 @@ class $modify(WRPlayLayer, PlayLayer){
 		}
 
 		if (m_fields->m_rarityLabel) {
+			if (m_fields->m_currentWinrateStartpos == -1) {
+				updateStartposWinrate();
+			}
 			m_fields->m_rarityLabel->setString((assembleRarityText(lastIndex)).c_str());
 			m_fields->m_parentContainer->updateLayout();
 		}
@@ -437,9 +422,9 @@ class $modify(WRPlayLayer, PlayLayer){
 		std::string returnString = "";
 		returnString += "Run Rarity: ";
 
-		1
+		
 
-		if (getCurrentPercentInt()>=lastIndex) {
+		if (getCurrentPercentInt()>lastIndex) {
 			return returnString + "?";
 		}
 
@@ -526,12 +511,16 @@ class $modify(WRPlayLayer, PlayLayer){
 	}	
 
 	std::string assembleCompletionTimeText() {
-		std::string returnString = "Time for ";
+		std::string returnString = "Time";
 
 		auto lastValidIterator = std::find(m_fields->m_percentageTimeLength.begin(),m_fields->m_percentageTimeLength.end(),-1);
 		int lastIndex = lastValidIterator-m_fields->m_percentageTimeLength.begin();
 
-		returnString += fmt::to_string(lastIndex) + "%: ";
+		if (lastIndex<100) {
+			returnString += " to " + std::to_string(std::max({0,lastIndex-1})) + "%";
+		}
+
+		returnString += ": Every ";
 
 		double time = calculateTimeToComplete(lastIndex);
 
