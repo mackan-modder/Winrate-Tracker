@@ -6,10 +6,10 @@ using namespace geode::prelude;
 
 class WRMenu : public geode::Popup {
 protected:
-    std::string m_idCurrent = "1";
-    std::string m_nameCurrent = "Stereo Madness";
-    std::string m_idPrevious = "1";
-    std::string m_namePrevious = "Stereo Madness";
+    gd::string m_idCurrent = "1";
+    gd::string m_nameCurrent = "Stereo Madness";
+    gd::string m_idPrevious = "1";
+    gd::string m_namePrevious = "Stereo Madness";
     CCMenuItemSpriteExtra* m_buttonLink = nullptr;
     CCMenuItemSpriteExtra* m_buttonReset = nullptr;
     CCMenuItemSpriteExtra* m_buttonStats = nullptr;
@@ -21,6 +21,6 @@ protected:
     void onStats(CCObject*);
 
 public:
-    static WRMenu* create(std::string idCurrent, std::string nameCurrent, std::string idPrevious, std::string namePrevious);
+    static WRMenu* create(gd::string idCurrent, gd::string nameCurrent, gd::string idPrevious, gd::string namePrevious);
 
 };

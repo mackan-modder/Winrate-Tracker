@@ -13,12 +13,12 @@ class $modify(WRPlayLayer, PlayLayer){
         std::array<int,100> m_percentageDataCount;
 		std::array<float,100> m_percentageTimeLength;
 		// m_linkedLevels includes the level we are in and other linked levels
-		std::set<std::string> m_linkedLevels; 
-		std::string m_levelId;
-		std::string m_levelName;
+		std::set<gd::string> m_linkedLevels; 
+		gd::string m_levelId;
+		gd::string m_levelName;
 		float m_alpha; 
 		bool m_scheduleLinkPopup = false;
-		std::string m_linkLevelName;
+		gd::string m_linkLevelName;
 		double m_currentWinrate;
 		double m_currentWinrateStartpos = -1;
 		double m_currentTime;
@@ -32,12 +32,12 @@ class $modify(WRPlayLayer, PlayLayer){
 		CCLabelBMFont* m_winrateLabel = nullptr;
 		CCLabelBMFont* m_rarityLabel = nullptr;
 		CCLabelBMFont* m_winrateLabelFlat = nullptr;
-		std::string m_winrateLabelFlatString;
+		gd::string m_winrateLabelFlatString;
 		CCLabelBMFont* m_completionTimeLabel = nullptr;
-		std::string m_completionTimeLabelString;
+		gd::string m_completionTimeLabelString;
 
 		~Fields() {
-			for (std::string levelId : m_linkedLevels) {
+			for (gd::string levelId : m_linkedLevels) {
 				Mod::get()->setSavedValue(levelId + "-winrate", m_percentageWinrate);
 				Mod::get()->setSavedValue(levelId+ "-datacount", m_percentageDataCount);
 				Mod::get()->setSavedValue(levelId + "-timelength", m_percentageTimeLength);
@@ -66,21 +66,21 @@ class $modify(WRPlayLayer, PlayLayer){
 			ourLevelId = EditorIDs::getID(level);
 		}
 
-		std::string levelId = fmt::to_string(ourLevelId);
+		gd::string levelId = std::to_string(ourLevelId);
 
 		// Saving the levelID to use when saving the data later
 
 		m_fields->m_percentageWinrate = Mod::get()->getSavedValue<std::array<float,100>>(levelId + "-winrate", m_fields->m_percentageWinrate);
 		m_fields->m_percentageDataCount = Mod::get()->getSavedValue<std::array<int,100>>(levelId+ "-datacount", m_fields->m_percentageDataCount);
 		m_fields->m_percentageTimeLength = Mod::get()->getSavedValue<std::array<float,100>>(levelId + "-timelength", m_fields->m_percentageTimeLength);
-		m_fields->m_linkedLevels = Mod::get()->getSavedValue<std::set<std::string>>(levelId + "-linked", m_fields->m_linkedLevels);
+		m_fields->m_linkedLevels = Mod::get()->getSavedValue<std::set<gd::string>>(levelId + "-linked", m_fields->m_linkedLevels);
 
 		m_fields->m_linkedLevels.insert(levelId);
 		m_fields->m_levelId = levelId;
 
 
 		// Saving the id in a list here we can loop through later
-		auto dataAll = Mod::get()->getSavedValue<std::set<std::string>>("all-level-ids");
+		auto dataAll = Mod::get()->getSavedValue<std::set<gd::string>>("all-level-ids");
 		dataAll.insert(levelId);
 		Mod::get()->setSavedValue("all-level-ids", dataAll);
 
@@ -88,8 +88,8 @@ class $modify(WRPlayLayer, PlayLayer){
 
 		Mod::get()->setSavedValue(levelId + "-levelname",level->m_levelName);
 
-		for (std::string id : dataAll) {
-			log::info("{} 1 {}",id, Mod::get()->getSavedValue<std::string>(id + "-levelname", ""));
+		for (gd::string id : dataAll) {
+			log::info("{} 1 {}",id, Mod::get()->getSavedValue<gd::string>(id + "-levelname", ""));
 		}
 		
 
@@ -259,8 +259,8 @@ class $modify(WRPlayLayer, PlayLayer){
         return expectedTime;
     }
 
-	std::string assembleWinrateText(int firstIndex, int lastIndex, bool dynamic){
-		std::string returnString = "";
+	gd::string assembleWinrateText(int firstIndex, int lastIndex, bool dynamic){
+		gd::string returnString = "";
 		returnString += "Winrate";
 
 		if (dynamic) returnString += " now" ;
@@ -301,7 +301,7 @@ class $modify(WRPlayLayer, PlayLayer){
 		return returnString;
 	}
 
-	std::string formatLargeNumbers(double number) {
+	gd::string formatLargeNumbers(double number) {
 
 		if (number<1000.0) {
 			return std::format("{:.3g}",number);
@@ -418,8 +418,8 @@ class $modify(WRPlayLayer, PlayLayer){
 		}
 	}
 
-	std::string assembleRarityText(int lastIndex) {
-		std::string returnString = "";
+	gd::string assembleRarityText(int lastIndex) {
+		gd::string returnString = "";
 		returnString += "Run Rarity: ";
 
 		
@@ -484,7 +484,7 @@ class $modify(WRPlayLayer, PlayLayer){
 		double differenceWinrate = newWinrate-m_fields->m_currentWinrate;
 
 		if (m_fields->m_completionTimeLabel) {
-			std::string changesTime = m_fields->m_completionTimeLabelString;
+			gd::string changesTime = m_fields->m_completionTimeLabelString;
 			
 			changesTime += ((differenceWinrate<0) ? " (+" : " (-") + formatTime(std::abs(differenceTime)) + ")";
 			m_fields->m_completionTimeLabel->setString(changesTime.c_str());
@@ -494,7 +494,7 @@ class $modify(WRPlayLayer, PlayLayer){
 		}
 
 		if (m_fields->m_winrateLabelFlat) {
-			std::string changesWinrate = m_fields->m_winrateLabelFlatString;
+			gd::string changesWinrate = m_fields->m_winrateLabelFlatString;
 
 			if (m_fields->m_currentWinrate>0.1) {
 				changesWinrate += ((differenceWinrate>=0) ? " (+" : " (-") + formatLargeNumbers(std::abs(differenceWinrate*100)) + "%)";
@@ -510,8 +510,8 @@ class $modify(WRPlayLayer, PlayLayer){
 		m_fields->m_parentContainer->updateLayout();
 	}	
 
-	std::string assembleCompletionTimeText() {
-		std::string returnString = "Time";
+	gd::string assembleCompletionTimeText() {
+		gd::string returnString = "Time";
 
 		auto lastValidIterator = std::find(m_fields->m_percentageTimeLength.begin(),m_fields->m_percentageTimeLength.end(),-1);
 		int lastIndex = lastValidIterator-m_fields->m_percentageTimeLength.begin();
@@ -529,10 +529,10 @@ class $modify(WRPlayLayer, PlayLayer){
 		return returnString;
 	}
 
-	std::string formatTime(double time) {
-		std::string timeUnit;
-		std::string returnNumberString;
-		std::string timeString;
+	gd::string formatTime(double time) {
+		gd::string timeUnit;
+		gd::string returnNumberString;
+		gd::string timeString;
 
 		if (time>60*60*24*7*52) {
 			time /= 60*60*24*7*52;

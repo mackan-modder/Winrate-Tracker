@@ -79,7 +79,7 @@ bool WRStatsMenu::init() {
 }
 
 
-WRStatsMenu* WRStatsMenu::create(std::string idCurrent, std::string nameCurrent) {
+WRStatsMenu* WRStatsMenu::create(gd::string idCurrent, gd::string nameCurrent) {
     auto ret = new WRStatsMenu();
     ret->m_idCurrent = idCurrent;
     ret->m_nameCurrent = nameCurrent;
@@ -104,7 +104,7 @@ void WRStatsMenu::onImpact(CCObject*) {
     winrate = Mod::get()->getSavedValue<std::array<float,100>>(m_idCurrent+"-winrate", winrate);
     times = Mod::get()->getSavedValue<std::array<float,100>>(m_idCurrent+"-timelength", times);
 
-    std::string levelsString = "Possible time to remove:\n";
+    gd::string levelsString = "Possible time to remove:\n";
 
 
     if (std::find(times.begin(), times.end(), -1) != times.end()) {
@@ -170,7 +170,7 @@ void WRStatsMenu::onPass(CCObject*) {
 
     winrate = Mod::get()->getSavedValue<std::array<float,100>>(m_idCurrent+"-winrate", winrate);
 
-    std::string levelsString = m_nameCurrent + " has passrates:\n";
+    gd::string levelsString = m_nameCurrent + " has passrates:\n";
 
     for (int i = 0;i<10;i++) {
         levelsString += std::to_string(i*10) + "%-" + std::to_string(i*10+10) + "%: ";
@@ -201,7 +201,7 @@ void WRStatsMenu::onStats(CCObject*) {
     return;
 }
 
-std::string WRStatsMenu::formatLargeNumbers(double number) {
+gd::string WRStatsMenu::formatLargeNumbers(double number) {
     if (number<1000.0) {
         return std::format("{:.3g}",number);
     } else if (number<MILLION) {
@@ -271,10 +271,10 @@ std::string WRStatsMenu::formatLargeNumbers(double number) {
     return "";
 }
 
-std::string WRStatsMenu::formatTime(double time) {
-    std::string timeUnit;
-    std::string returnNumberString;
-    std::string timeString;
+gd::string WRStatsMenu::formatTime(double time) {
+    gd::string timeUnit;
+    gd::string returnNumberString;
+    gd::string timeString;
 
     if (time>60*60*24*7*52) {
         time /= 60*60*24*7*52;

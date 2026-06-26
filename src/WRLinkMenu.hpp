@@ -6,10 +6,10 @@ using namespace geode::prelude;
 
 class WRLinkMenu : public geode::Popup {
 protected:
-    std::string m_idCurrent = "1";
-    std::string m_nameCurrent = "Stereo Madness";
-    std::string m_idPrevious = "1";
-    std::string m_namePrevious = "Stereo Madness";
+    gd::string m_idCurrent = "1";
+    gd::string m_nameCurrent = "Stereo Madness";
+    gd::string m_idPrevious = "1";
+    gd::string m_namePrevious = "Stereo Madness";
     bool m_isLinked;
     CCMenuItemSpriteExtra* m_buttonLink = nullptr;
     CCMenuItemSpriteExtra* m_buttonUnLink = nullptr;
@@ -27,10 +27,10 @@ protected:
 
     void linkPopup();
     void linkPopup2();
-    void unlinkLevel(std::string level);
-    void linkLevel(std::string levelKeep, std::string levelDicard);
+    void unlinkLevel(gd::string level);
+    void linkLevel(gd::string levelKeep, gd::string levelDicard);
 
 public:
-    static WRLinkMenu* create(std::string idCurrent, std::string nameCurrent, std::string idPrevious, std::string namePrevious);
+    static WRLinkMenu* create(gd::string idCurrent, gd::string nameCurrent, gd::string idPrevious, gd::string namePrevious);
 
 };
