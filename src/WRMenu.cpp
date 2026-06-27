@@ -27,18 +27,7 @@ bool WRMenu::init() {
     background->setContentSize({ 225.f, 85.f });
     background->setID("WR-background");
 
-    auto spriteLink = ButtonSprite::create("Link");
-    m_buttonLink = CCMenuItemSpriteExtra::create(
-        spriteLink,
-        nullptr,
-        this,
-        menu_selector(WRMenu::onLink)
-    );
-    m_buttonLink->setID("wr-button-Link");
-    m_buttonLink->setZOrder(1);
-    m_buttonLink->setScale(2);
-    m_buttonLink->setVisible(true);
-    myMenuContent->addChildAtPosition(m_buttonLink,Anchor::Top);
+    
 
 
     auto spriteStats = ButtonSprite::create("Winrate Stats");
@@ -53,6 +42,20 @@ bool WRMenu::init() {
     m_buttonStats->setScale(2);
     m_buttonStats->setVisible(true);
     myMenuContent->addChildAtPosition(m_buttonStats,Anchor::Top);
+
+    auto spriteLink = ButtonSprite::create("Link");
+    m_buttonLink = CCMenuItemSpriteExtra::create(
+        spriteLink,
+        nullptr,
+        this,
+        menu_selector(WRMenu::onLink)
+    );
+    m_buttonLink->setID("wr-button-Link");
+    m_buttonLink->setZOrder(1);
+    m_buttonLink->setScale(2);
+    m_buttonLink->setVisible(true);
+    myMenuContent->addChildAtPosition(m_buttonLink,Anchor::Top);
+
     auto spriteReset = ButtonSprite::create("Reset Winrate of level");
     m_buttonReset = CCMenuItemSpriteExtra::create(
         spriteReset,

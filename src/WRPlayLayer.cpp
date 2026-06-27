@@ -91,7 +91,6 @@ class $modify(WRPlayLayer, PlayLayer){
 		for (std::string id : dataAll) {
 			log::info("{} 1 {}",id, Mod::get()->getSavedValue<std::string>(id + "-levelname", ""));
 		}
-		
 
 		m_fields->m_measuringTimeLength = false;
 		for(int i=0;i<100;i++){	
@@ -130,15 +129,6 @@ class $modify(WRPlayLayer, PlayLayer){
 			
 			m_fields->m_parentContainer->updateLayout();
 		}
-		if (Mod::get()->getSettingValue<bool>("rarity-label")) {
-			m_fields->m_rarityLabel = CCLabelBMFont::create("Run Rarity is TEST", "bigFont.fnt");
-
-			m_fields->m_parentContainer->addChild(m_fields->m_rarityLabel);
-
-			m_fields->m_rarityLabel->setAnchorPoint({0,0});
-			
-			m_fields->m_parentContainer->updateLayout();
-		}
 		if (Mod::get()->getSettingValue<bool>("winrate-flat")) {
 			m_fields->m_winrateLabelFlat = CCLabelBMFont::create("Winrate is TEST", "bigFont.fnt");
 
@@ -154,6 +144,15 @@ class $modify(WRPlayLayer, PlayLayer){
 			m_fields->m_parentContainer->addChild(m_fields->m_completionTimeLabel);
 
 			m_fields->m_completionTimeLabel->setAnchorPoint({0,0});
+		}
+		if (Mod::get()->getSettingValue<bool>("rarity-label")) {
+			m_fields->m_rarityLabel = CCLabelBMFont::create("Run Rarity is TEST", "bigFont.fnt");
+
+			m_fields->m_parentContainer->addChild(m_fields->m_rarityLabel);
+
+			m_fields->m_rarityLabel->setAnchorPoint({0,0});
+			
+			m_fields->m_parentContainer->updateLayout();
 		}
 		
 		m_fields->m_parentContainer->setOpacity(static_cast<int>(255.0*Mod::get()->getSettingValue<float>("label-opacity")));
@@ -427,9 +426,7 @@ class $modify(WRPlayLayer, PlayLayer){
 		int lastIndex = lastValidIterator-m_fields->m_percentageTimeLength.begin();
 
 		// We never die at 100% but when we have died at 99%, it will say to 100
-		if (lastIndex==100) lastIndex++; 
-
-		returnString += " for " + fmt::to_string(std::max({0,lastIndex-1})) + "%";
+		returnString += " for " + fmt::to_string(std::max({0,lastIndex-(lastIndex!=100)})) + "%";
 
 		returnString += ": ";
 

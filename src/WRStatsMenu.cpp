@@ -39,20 +39,6 @@ bool WRStatsMenu::init() {
     m_buttonPass->setVisible(true);
     myMenuContent->addChildAtPosition(m_buttonPass,Anchor::Top);
 
-
-    // auto spriteStats = ButtonSprite::create("Passrate Impact");
-    // m_buttonStats = CCMenuItemSpriteExtra::create(
-    //     spriteStats,
-    //     nullptr,
-    //     this,
-    //     menu_selector(WRStatsMenu::onStats)
-    // );
-    // m_buttonStats->setID("wr-button-stats");
-    // m_buttonStats->setZOrder(1);
-    // m_buttonStats->setScale(2);
-    // m_buttonStats->setVisible(true);
-    // myMenuContent->addChildAtPosition(m_buttonStats,Anchor::Top);
-
     auto spriteImpact = ButtonSprite::create("Possible Improvements");
     m_buttonImpact = CCMenuItemSpriteExtra::create(
         spriteImpact,
@@ -164,20 +150,35 @@ void WRStatsMenu::onImpact(CCObject*) {
 
 void WRStatsMenu::onPass(CCObject*) {
     std::array<float,100> winrate;
+    std::array<int,100> dataCount;
     for(int i=0;i<100;i++){	
         winrate[i] = 1.0;
+        dataCount[i] = 0;
     }
 
     winrate = Mod::get()->getSavedValue<std::array<float,100>>(m_idCurrent+"-winrate", winrate);
+    dataCount = Mod::get()->getSavedValue<std::array<int,100>>(m_idCurrent+"-datacount", dataCount);
 
     std::string levelsString = m_nameCurrent + " has passrates:\n";
 
     for (int i = 0;i<10;i++) {
         levelsString += fmt::to_string(i*10) + "%-" + fmt::to_string(i*10+10) + "%: ";
         double product = 1;
+
+        bool noData = false;
+        for (int j = 0;j<10;j++) {
+            if (dataCount[i*10+j]==0) noData = true;
+        }
+        if (noData) {
+            levelsString += "-\n";
+            continue;
+        }
+
+
         for (int j = 0;j<10;j++) {
             product *= static_cast<double>(winrate[i*10+j]);
         }
+
         if (product<0.01 && product!=0) {
             levelsString += "1 in " + formatLargeNumbers(1/product);
         } else {

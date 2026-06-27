@@ -165,6 +165,9 @@ void WRLinkMenu::onLinkedList(CCObject*){
     std::string levelsString = m_nameCurrent + " is linked with:\n";
 
     int size = linkedList.size();
+
+    
+
     int i = 0;
     for (id = linkedList.begin(); id != linkedList.end(); id++) {
         std::string localString = Mod::get()->getSavedValue<std::string>(*id + "-levelname", "");
@@ -173,7 +176,7 @@ void WRLinkMenu::onLinkedList(CCObject*){
         } else {
             levelsString += *id;
         }
-        if (id==linkedList.end()) {
+        if (i==size-1) {
             levelsString += ".";
         } else if (i==size-2) {
             levelsString += " and ";
@@ -183,6 +186,9 @@ void WRLinkMenu::onLinkedList(CCObject*){
         i++;
     }
 
+    if (size==0) {
+        levelsString += "-";
+    }
 
 
     FLAlertLayer::create(
