@@ -17,14 +17,32 @@ bool WRStatsMenu::init() {
     // label->setScale(0.6); 
     // m_mainLayer->addChildAtPosition(label, Anchor::Top, CCPoint(0.f,-20.f));
     auto myMenuContent = CCMenu::create();
-    myMenuContent->setLayout(ColumnLayout::create()->setAxisReverse(true)->setAxisAlignment(AxisAlignment::End));
+    myMenuContent->setLayout(ColumnLayout::create()
+    ->setAxisReverse(true)->setAxisAlignment(AxisAlignment::End));
     myMenuContent->setScale(0.6);
 
-    auto background = cocos2d::extension::CCScale9Sprite::create("square02b_001.png");
+    auto background 
+    = cocos2d::extension::CCScale9Sprite::create("square02b_001.png");
     background->setColor({ 0, 0, 0 });
     background->setOpacity(100);
     background->setContentSize({ 225.f, 85.f });
     background->setID("WR-background");
+
+    auto spriteOverall 
+    = ButtonSprite::create("Overall Stats");
+
+    m_buttonOverall = CCMenuItemSpriteExtra::create(
+        spriteOverall,
+        nullptr,
+        this,
+        menu_selector(WRStatsMenu::onOverall)
+    );
+    m_buttonOverall->setID("wr-button-Overall");
+    m_buttonOverall->setZOrder(1);
+    m_buttonOverall->setScale(2);
+    m_buttonOverall->setVisible(true);
+    myMenuContent->addChildAtPosition(
+    m_buttonOverall,Anchor::Top);
 
     auto spritePass = ButtonSprite::create("Passrates");
     m_buttonPass = CCMenuItemSpriteExtra::create(
@@ -39,7 +57,9 @@ bool WRStatsMenu::init() {
     m_buttonPass->setVisible(true);
     myMenuContent->addChildAtPosition(m_buttonPass,Anchor::Top);
 
-    auto spriteImpact = ButtonSprite::create("Possible Improvements");
+    auto spriteImpact 
+    = ButtonSprite::create("Possible Improvements");
+
     m_buttonImpact = CCMenuItemSpriteExtra::create(
         spriteImpact,
         nullptr,
@@ -56,8 +76,10 @@ bool WRStatsMenu::init() {
 
     CCPoint offset = {0,-75};
     CCPoint offsetBackground = {0,-10};
-    m_mainLayer->addChildAtPosition(background,Anchor::Center,offsetBackground);
-    m_mainLayer->addChildAtPosition(myMenuContent, Anchor::Center, offset);
+    m_mainLayer->addChildAtPosition(
+    background,Anchor::Center,offsetBackground);
+    m_mainLayer->addChildAtPosition(
+    myMenuContent, Anchor::Center, offset);
     
     m_mainLayer->updateLayout();
 
@@ -65,10 +87,10 @@ bool WRStatsMenu::init() {
 }
 
 
-WRStatsMenu* WRStatsMenu::create(std::string idCurrent, std::string nameCurrent) {
+WRStatsMenu* WRStatsMenu::create(std::string idCur, std::string nameCur) {
     auto ret = new WRStatsMenu();
-    ret->m_idCurrent = idCurrent;
-    ret->m_nameCurrent = nameCurrent;
+    ret->m_idCurrent = idCur;
+    ret->m_nameCurrent = nameCur;
     if (ret->init()) {
         ret->autorelease();
         return ret;
@@ -87,10 +109,12 @@ void WRStatsMenu::onImpact(CCObject*) {
         times[i] = -1;
     }
 
-    winrate = Mod::get()->getSavedValue<std::array<float,100>>(m_idCurrent+"-winrate", winrate);
-    times = Mod::get()->getSavedValue<std::array<float,100>>(m_idCurrent+"-timelength", times);
+    winrate = Mod::get()->getSavedValue<std::array<float,100>>(
+    m_idCurrent+"-winrate", winrate);
+    times = Mod::get()->getSavedValue<std::array<float,100>>(
+    m_idCurrent+"-timelength", times);
 
-    std::string levelsString = "Possible time to remove:\n";
+    std::string levelsString = "Possible \"Time for 100\%\" to remove:\n";
 
 
     if (std::find(times.begin(), times.end(), -1) != times.end()) {
@@ -117,33 +141,46 @@ void WRStatsMenu::onImpact(CCObject*) {
     
 
     for (int i = 0;i<10;i++) {
-        levelsString += fmt::to_string(i*10) + "%-" + fmt::to_string(i*10+10) + "%: ";
+        levelsString += fmt::to_string(i*10) 
+        + "%-" + fmt::to_string(i*10+10) + "%: ";
         
         
         double expectedTimeChanged = 1; // We assume respawn time is 1 second
 
         for (int j=0;j<100;j++) {
             if (j>=i*10 && j<(i+1)*10) {
-                expectedTimeChanged = (static_cast<double>(times[j])+expectedTimeChanged);
+                expectedTimeChanged 
+                = (static_cast<double>(times[j])+expectedTimeChanged);
             } else {
-                expectedTimeChanged = (static_cast<double>(times[j])+expectedTimeChanged)
-                /std::max({static_cast<double>(winrate[j]),LOWERLIMIT});
+                expectedTimeChanged 
+                = (static_cast<double>(times[j])+expectedTimeChanged)
+                /std::max(
+                {static_cast<double>(winrate[j]),LOWERLIMIT});
             }
         }
         
         double impact = std::abs(expectedTimeNormal-expectedTimeChanged);
         
-        
-        // levelsString += formatTime(impact) + " / " + fmt::format("{:.2f}",impact/expectedTimeNormal*100) + "\%";
-        levelsString += fmt::format("{:.2f}",impact/expectedTimeNormal*100) + "\%";
+        levelsString += fmt::format("{:.1f}",impact/expectedTimeNormal*100) 
+        + "\%";
         levelsString += "\n";
     }
-    
-    FLAlertLayer::create(
-    "Level Stats",    // title
-    levelsString,  // content
-    "OK"        // button
-    )->show();
+
+    geode::createQuickPopup(
+        "Possible Time Improvement",            // title
+        levelsString,   // content
+        "Back", "Copy",      // buttons
+        [levelsString](auto, bool btn2) {
+            if (btn2) {
+                Notification::create(
+                "Copied Stats to Clipboard!",
+                NotificationIcon::Success, 5.0f)
+                ->show();
+                clipboard::write(levelsString);
+                // say hi to mom
+            }
+        }
+    );
 
     return;
 }
@@ -156,13 +193,17 @@ void WRStatsMenu::onPass(CCObject*) {
         dataCount[i] = 0;
     }
 
-    winrate = Mod::get()->getSavedValue<std::array<float,100>>(m_idCurrent+"-winrate", winrate);
-    dataCount = Mod::get()->getSavedValue<std::array<int,100>>(m_idCurrent+"-datacount", dataCount);
+    winrate = Mod::get()->getSavedValue<std::array<float,100>>
+    (m_idCurrent+"-winrate", winrate);
+
+    dataCount = Mod::get()->getSavedValue<std::array<int,100>>
+    (m_idCurrent+"-datacount", dataCount);
 
     std::string levelsString = m_nameCurrent + " has passrates:\n";
 
     for (int i = 0;i<10;i++) {
-        levelsString += fmt::to_string(i*10) + "%-" + fmt::to_string(i*10+10) + "%: ";
+        levelsString += fmt::to_string(i*10) + "%-" 
+        + fmt::to_string(i*10+10) + "%: ";
         double product = 1;
 
         bool noData = false;
@@ -174,7 +215,6 @@ void WRStatsMenu::onPass(CCObject*) {
             continue;
         }
 
-
         for (int j = 0;j<10;j++) {
             product *= static_cast<double>(winrate[i*10+j]);
         }
@@ -182,22 +222,130 @@ void WRStatsMenu::onPass(CCObject*) {
         if (product<0.01 && product!=0) {
             levelsString += "1 in " + formatLargeNumbers(1/product);
         } else {
-            levelsString += fmt::format("{:.2g}",product*100) + "%";
+            levelsString += fmt::format("{:.1f}",product*100) + "%";
         }
         levelsString += "\n";
     }
     
-    FLAlertLayer::create(
-    "Level Stats",    // title
-    levelsString,  // content
-    "OK"        // button
-    )->show();
+    // FLAlertLayer::create(
+    // "Level Stats",    // title
+    // levelsString,  // content
+    // "OK"        // button
+    // )->show();
+
+    geode::createQuickPopup(
+        "Level Passrates",            // title
+        levelsString,   // content
+        "Back", "Copy",      // buttons
+        [levelsString](auto, bool btn2) {
+            if (btn2) {
+                Notification::create(
+                "Copied Stats to Clipboard!",
+                NotificationIcon::Success, 5.0f)
+                ->show();
+                clipboard::write(levelsString);
+                // say hi to mom
+            }
+        }
+    );
 
     return;
 }
 
-void WRStatsMenu::onStats(CCObject*) {
-    // IDK what I should put in here yet tbh
+void WRStatsMenu::onOverall(CCObject*) {
+
+    
+    std::array<float,100> times;
+    std::array<float,100> winrate;
+    std::array<int,100> dataCount;
+    for(int i=0;i<100;i++){	
+        winrate[i] = 1.0;
+        dataCount[i] = 0;
+        times[i] = -1;
+    }
+
+    winrate = Mod::get()->getSavedValue<std::array<float,100>>
+    (m_idCurrent+"-winrate", winrate);
+
+    dataCount = Mod::get()->getSavedValue<std::array<int,100>>
+    (m_idCurrent+"-datacount", dataCount);
+
+    times = Mod::get()->getSavedValue<std::array<float,100>>
+    (m_idCurrent+"-timelength", times);
+
+    std::set<std::string> linkedList 
+    = Mod::get()->getSavedValue<std::set<std::string>>(m_idCurrent+"-linked");
+
+    int totalAttempts = 0;
+
+    for (std::string levelId : linkedList) {
+        totalAttempts += Mod::get()->getSavedValue<int>(levelId+"-attempts");
+    }
+    
+    double totalwinrate = 1;
+    double timeFor100 = 1;
+    bool hasData = true; 
+    for (int i = 0;i<100;i++) {
+        if (dataCount[i]==0 || times[i]==-1) hasData = false;
+        totalwinrate *= winrate[i];
+        timeFor100 = (static_cast<double>(times[i])+timeFor100)
+        /std::max({static_cast<double>(winrate[i]),LOWERLIMIT});
+    }
+
+    std::string StatsString = "";
+
+    if (hasData) {
+        
+        time_t timestamp = time(nullptr);
+        tm tm = geode::localtime(timestamp);
+        StatsString += fmt::to_string(tm.tm_year+1900) + "-";
+        if (tm.tm_mon<10) StatsString += "0";
+        StatsString += fmt::to_string(tm.tm_mon) + "-"; 
+        if (tm.tm_mday<10) StatsString += "0";
+        StatsString += fmt::to_string(tm.tm_mday) + " ";
+        if (tm.tm_hour<10) StatsString += "0";
+        StatsString += fmt::to_string(tm.tm_hour) + ":"; 
+        if (tm.tm_min<10) StatsString += "0";
+        StatsString += fmt::to_string(tm.tm_min) + "\n";
+
+        StatsString += fmt::to_string(totalAttempts) + " attempts\n";
+
+        StatsString += "Winrate: ";
+
+        if (totalwinrate<0.01 && totalwinrate!=0) {
+            StatsString += "1 in " + formatLargeNumbers(1/totalwinrate);
+        } else {
+            StatsString += fmt::format("{:.1f}",totalwinrate*100) + "%";
+        }
+        StatsString += "\n";
+
+
+        StatsString += "Time for 100%: " + formatTime(timeFor100);
+
+        
+        
+
+    } else {
+        StatsString += "Not enough data." 
+        "\nComplete every percentage in the level atleast once.";
+    }
+
+    geode::createQuickPopup(
+        "Overall Stats",            // title
+        StatsString,   // content
+        "Back", "Copy",      // buttons
+        [StatsString](auto, bool btn2) {
+            if (btn2) {
+                Notification::create(
+                "Copied Stats to Clipboard!",
+                NotificationIcon::Success, 5.0f)
+                ->show();
+                clipboard::write(StatsString);
+                // say hi to mom
+            }
+        }
+    );
+
 
     return;
 }
@@ -273,30 +421,45 @@ std::string WRStatsMenu::formatLargeNumbers(double number) {
 }
 
 std::string WRStatsMenu::formatTime(double time) {
-    std::string timeUnit;
-    std::string returnNumberString;
-    std::string timeString;
+		std::string timeUnit;
+		std::string returnNumberString;
+		std::string timeString;
 
-    if (time>60*60*24*7*52) {
-        time /= 60*60*24*7*52;
-        timeString = formatLargeNumbers(time);
-        timeUnit = "years";
-    } else if (time>60*60*24) {
-        time /= 60*60*24;
-        timeString = fmt::format("{:.3g}",time);
-        timeUnit = "days";
-    } else if (time>60*60) {
-        time /= 60*60;
-        timeString = fmt::format("{:.3g}",time);
-        timeUnit = "hours";
-    } else if (time>60) {
-        time /= 60;
-        timeString = fmt::format("{:.3g}",time);
-        timeUnit = "minutes";
-    } else {
-        timeString = fmt::format("{:.3g}",time);
-        timeUnit = "seconds";
-    }
-    
-    return timeString + " " + timeUnit;
-}
+		if (Mod::get()->getSettingValue<bool>("time-format")) {
+			if (time>60*60*24*7*52) {
+				time /= 60*60*24*7*52;
+				timeString = formatLargeNumbers(time);
+				timeUnit = "years";
+			} else if (time>60*60*24) {
+				time /= 60*60*24;
+				timeString = fmt::format("{:.3g}",time);
+				timeUnit = "days";
+			} else if (time>60*60) {
+				time /= 60*60;
+				timeString = fmt::format("{:.3g}",time);
+				timeUnit = "hours";
+			} else if (time>60) {
+				time /= 60;
+				timeString = fmt::format("{:.3g}",time);
+				timeUnit = "minutes";
+			} else {
+				timeString = fmt::format("{:.3g}",time);
+				timeUnit = "seconds";
+			}	
+		} else {
+			if (time>60*60) {
+				time /= 60*60;
+				timeString = fmt::format("{:.3g}",time);
+				timeUnit = "hours";
+			} else if (time>60) {
+				time /= 60;
+				timeString = fmt::format("{:.3g}",time);
+				timeUnit = "minutes";
+			} else {
+				timeString = fmt::format("{:.3g}",time);
+				timeUnit = "seconds";
+			}
+		}
+		
+		return timeString + " " + timeUnit;
+	}

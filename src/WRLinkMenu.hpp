@@ -31,6 +31,7 @@ protected:
     void linkLevel(std::string levelKeep, std::string levelDicard);
 
 public:
-    static WRLinkMenu* create(std::string idCurrent, std::string nameCurrent, std::string idPrevious, std::string namePrevious);
+    static WRLinkMenu* create(std::string idCurrent, std::string nameCurrent
+        , std::string idPrevious, std::string namePrevious);
 
 };

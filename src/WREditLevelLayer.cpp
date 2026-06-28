@@ -14,22 +14,36 @@ class $modify(WREditLevelLayer, EditLevelLayer) {
         CCMenuItemSpriteExtra* m_buttonMenu = nullptr;
 
         ~Fields() {
-            if (m_idCurrent!=m_idPrevious && m_idCurrent!=Mod::get()->getSavedValue<std::string>("previous-level-id-backup","1")) {
-                Mod::get()->setSavedValue("previous-level-id-backup", m_idPrevious);
-                Mod::get()->setSavedValue("previous-level-name-backup", m_namePrevious);
+            if (m_idCurrent!=m_idPrevious 
+            && m_idCurrent!=Mod::get()->getSavedValue<std::string>(
+            "previous-level-id-backup","1")) {
+                Mod::get()->setSavedValue("previous-level-id-backup"
+                , m_idPrevious);
+                Mod::get()->setSavedValue("previous-level-name-backup"
+                , m_namePrevious);
                 
-                Mod::get()->setSavedValue("previous-level-id", m_idCurrent);
-                Mod::get()->setSavedValue("previous-level-name", m_nameCurrent);
-            } else if (m_idCurrent==Mod::get()->getSavedValue<std::string>("previous-level-id-backup","1")) {
-                std::string backupId = Mod::get()->getSavedValue<std::string>("previous-level-id-backup","1");
-                std::string backupName = Mod::get()->getSavedValue<std::string>("previous-level-name-backup","1");
+                Mod::get()->setSavedValue("previous-level-id"
+                , m_idCurrent);
+                Mod::get()->setSavedValue("previous-level-name"
+                , m_nameCurrent);
+            } else if (m_idCurrent==Mod::get()->getSavedValue<std::string>(
+            "previous-level-id-backup","1")) {
+                std::string backupId = Mod::get()->getSavedValue<std::string>(
+                "previous-level-id-backup","1");
 
-                Mod::get()->setSavedValue("previous-level-id-backup", m_idPrevious);
-                Mod::get()->setSavedValue("previous-level-name-backup", m_namePrevious);
+                std::string backupName = Mod::get()->getSavedValue<std::string>(
+                "previous-level-name-backup","1");
 
-                Mod::get()->setSavedValue("previous-level-id", backupId);
-                Mod::get()->setSavedValue("previous-level-name", backupName);
-            }            
+                Mod::get()->setSavedValue("previous-level-id-backup"
+                , m_idPrevious);
+                Mod::get()->setSavedValue("previous-level-name-backup"
+                , m_namePrevious);
+
+                Mod::get()->setSavedValue("previous-level-id"
+                , backupId);
+                Mod::get()->setSavedValue("previous-level-name"
+                , backupName);
+            }           
         }
     };
 
@@ -45,15 +59,22 @@ class $modify(WREditLevelLayer, EditLevelLayer) {
         m_fields->m_idCurrent = fmt::to_string(ourLevelId);
         m_fields->m_nameCurrent = level->m_levelName;
         
-        m_fields->m_idPrevious = Mod::get()->getSavedValue<std::string>("previous-level-id","1");
-        m_fields->m_namePrevious = Mod::get()->getSavedValue<std::string>("previous-level-name","Stereo Madness");
+        m_fields->m_idPrevious = Mod::get()->getSavedValue<std::string>(
+        "previous-level-id","1");
+
+        m_fields->m_namePrevious = Mod::get()->getSavedValue<std::string>(
+        "previous-level-name","Stereo Madness");
 
         if (m_fields->m_idPrevious==m_fields->m_idCurrent) {
-            m_fields->m_idPrevious = Mod::get()->getSavedValue<std::string>("previous-level-id-backup","1");
-            m_fields->m_namePrevious = Mod::get()->getSavedValue<std::string>("previous-level-name-backup","Stereo Madness");
+            m_fields->m_idPrevious = Mod::get()->getSavedValue<std::string>(
+            "previous-level-id-backup","1");
+
+            m_fields->m_namePrevious = Mod::get()->getSavedValue<std::string>(
+            "previous-level-name-backup","Stereo Madness");
         }
         
-        auto spr = CircleButtonSprite::createWithSprite("percentage.png"_spr);
+        auto spr 
+        = CircleButtonSprite::createWithSprite("percentage.png"_spr);
 
         spr->setScale(0.8);
 
@@ -71,13 +92,17 @@ class $modify(WREditLevelLayer, EditLevelLayer) {
         folderMenu->addChild(m_fields->m_buttonMenu);
         folderMenu->updateLayout();
 
-        Mod::get()->setSavedValue(m_fields->m_idCurrent + "-levelname",m_fields->m_nameCurrent);
+        Mod::get()->setSavedValue(
+        m_fields->m_idCurrent + "-levelname",m_fields->m_nameCurrent);
         
         return true;
     }
 
     void onLinkButton (CCObject*) {
-        WRMenu::create(m_fields->m_idCurrent, m_fields->m_nameCurrent, m_fields->m_idPrevious, m_fields->m_namePrevious)->show();
+        WRMenu::create(m_fields->m_idCurrent
+        , m_fields->m_nameCurrent
+        , m_fields->m_idPrevious
+        , m_fields->m_namePrevious)->show();
     }
 };
 

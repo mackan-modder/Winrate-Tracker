@@ -13,12 +13,13 @@ protected:
     CCMenuItemSpriteExtra* m_buttonPass = nullptr;
     CCMenuItemSpriteExtra* m_buttonImpact = nullptr;
     CCMenuItemSpriteExtra* m_buttonStats = nullptr;
+    CCMenuItemSpriteExtra* m_buttonOverall = nullptr;
 
 
     bool init();
     void onPass(CCObject*);
     void onImpact(CCObject*);
-    void onStats(CCObject*);
+    void onOverall(CCObject*);
 
     std::string formatLargeNumbers(double number);
     std::string formatTime(double time);

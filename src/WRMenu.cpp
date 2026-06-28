@@ -18,10 +18,12 @@ bool WRMenu::init() {
     // label->setScale(0.6); 
     // m_mainLayer->addChildAtPosition(label, Anchor::Top, CCPoint(0.f,-20.f));
     auto myMenuContent = CCMenu::create();
-    myMenuContent->setLayout(ColumnLayout::create()->setAxisReverse(true)->setAxisAlignment(AxisAlignment::End));
+    myMenuContent->setLayout(ColumnLayout::create()
+    ->setAxisReverse(true)->setAxisAlignment(AxisAlignment::End));
     myMenuContent->setScale(0.6);
 
-    auto background = cocos2d::extension::CCScale9Sprite::create("square02b_001.png");
+    auto background 
+    = cocos2d::extension::CCScale9Sprite::create("square02b_001.png");
     background->setColor({ 0, 0, 0 });
     background->setOpacity(100);
     background->setContentSize({ 225.f, 85.f });
@@ -56,7 +58,9 @@ bool WRMenu::init() {
     m_buttonLink->setVisible(true);
     myMenuContent->addChildAtPosition(m_buttonLink,Anchor::Top);
 
-    auto spriteReset = ButtonSprite::create("Reset Winrate of level");
+    auto spriteReset 
+    = ButtonSprite::create("Reset Winrate of level");
+
     m_buttonReset = CCMenuItemSpriteExtra::create(
         spriteReset,
         nullptr,
@@ -73,8 +77,11 @@ bool WRMenu::init() {
 
     CCPoint offset = {0,-75};
     CCPoint offsetBackground = {0,-10};
-    m_mainLayer->addChildAtPosition(background,Anchor::Center,offsetBackground);
-    m_mainLayer->addChildAtPosition(myMenuContent, Anchor::Center, offset);
+    m_mainLayer->addChildAtPosition(
+    background,Anchor::Center,offsetBackground);
+
+    m_mainLayer->addChildAtPosition(
+    myMenuContent, Anchor::Center, offset);
     
     m_mainLayer->updateLayout();
 
@@ -82,7 +89,8 @@ bool WRMenu::init() {
 }
 
 
-WRMenu* WRMenu::create(std::string idCurrent, std::string nameCurrent, std::string idPrevious, std::string namePrevious) {
+WRMenu* WRMenu::create(std::string idCurrent, std::string nameCurrent
+, std::string idPrevious, std::string namePrevious) {
     auto ret = new WRMenu();
     ret->m_idCurrent = idCurrent;
     ret->m_nameCurrent = nameCurrent;
@@ -116,9 +124,12 @@ void WRMenu::onResetWinrate(CCObject*) {
                     defaultTimeLength[i] = -1;
                 }
 
-                Mod::get()->setSavedValue(id + "-winrate", defaultWinrate);
-				Mod::get()->setSavedValue(id+ "-datacount", defaultDataCount);
-				Mod::get()->setSavedValue(id + "-timelength", defaultTimeLength);
+                Mod::get()->setSavedValue(id + "-winrate"
+                , defaultWinrate);
+				Mod::get()->setSavedValue(id+ "-datacount"
+                , defaultDataCount);
+				Mod::get()->setSavedValue(id + "-timelength"
+                , defaultTimeLength);
             }
         }
     );
@@ -127,17 +138,18 @@ void WRMenu::onResetWinrate(CCObject*) {
 }
 
 void WRMenu::onLink(CCObject*) {
-    WRLinkMenu::create(this->m_idCurrent, this->m_nameCurrent, this->m_idPrevious, this->m_namePrevious)->show();
-    this->removeMeAndCleanup();
+    WRLinkMenu::create(this->m_idCurrent
+    , this->m_nameCurrent, this->m_idPrevious
+    , this->m_namePrevious)->show();
+    
 
     return;
 }
 
 void WRMenu::onStats(CCObject*) {
-    // Yeah I decided to implement this today anyway(a basic version of it anyway).
 
-    WRStatsMenu::create(this->m_idCurrent,this->m_nameCurrent)->show();
-    this->removeMeAndCleanup();
+    WRStatsMenu::create(this->m_idCurrent
+    ,this->m_nameCurrent)->show();
 
     return;
 }

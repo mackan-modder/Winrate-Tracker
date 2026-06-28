@@ -19,17 +19,23 @@ bool WRLinkMenu::init() {
     // label->setScale(0.6); 
     // m_mainLayer->addChildAtPosition(label, Anchor::Top, CCPoint(0.f,-20.f));
     auto myMenuContent = CCMenu::create();
-    myMenuContent->setLayout(ColumnLayout::create()->setAxisReverse(true)->setAxisAlignment(AxisAlignment::End));
+    myMenuContent->setLayout(ColumnLayout::create()
+    ->setAxisReverse(true)->setAxisAlignment(AxisAlignment::End));
+
     myMenuContent->setScale(0.6);
 
-    auto background = cocos2d::extension::CCScale9Sprite::create("square02b_001.png");
+    auto background 
+    = cocos2d::extension::CCScale9Sprite::create("square02b_001.png");
+
     background->setColor({ 0, 0, 0 });
     background->setOpacity(100);
     background->setContentSize({ 225.f, 85.f });
     background->setID("WR-background");
 
 
-    auto spriteLink = ButtonSprite::create("Link With Previous Level");
+    auto spriteLink 
+    = ButtonSprite::create("Link With Previous Level");
+
     m_buttonLink = CCMenuItemSpriteExtra::create(
         spriteLink,
         nullptr,
@@ -42,7 +48,9 @@ bool WRLinkMenu::init() {
     m_buttonLink->setVisible(true);
     myMenuContent->addChildAtPosition(m_buttonLink,Anchor::Top);
 
-    auto spriteUnLink = ButtonSprite::create("Unlink Current Level");
+    auto spriteUnLink 
+    = ButtonSprite::create("Unlink Current Level");
+
     m_buttonUnLink = CCMenuItemSpriteExtra::create(
         spriteUnLink,
         nullptr,
@@ -55,7 +63,9 @@ bool WRLinkMenu::init() {
     m_buttonUnLink->setVisible(true);
     myMenuContent->addChildAtPosition(m_buttonUnLink,Anchor::Top);
 
-    auto spriteLinkedList = ButtonSprite::create("Linked Levels");
+    auto spriteLinkedList 
+    = ButtonSprite::create("Linked Levels");
+
     m_buttonLinkedList = CCMenuItemSpriteExtra::create(
         spriteLinkedList,
         nullptr,
@@ -82,16 +92,18 @@ bool WRLinkMenu::init() {
 
     CCPoint offset = {0,-75};
     CCPoint offsetBackground = {0,-10};
-    m_mainLayer->addChildAtPosition(background,Anchor::Center,offsetBackground);
-    m_mainLayer->addChildAtPosition(myMenuContent, Anchor::Center, offset);
-    
+    m_mainLayer->addChildAtPosition(
+    background,Anchor::Center,offsetBackground);
 
+    m_mainLayer->addChildAtPosition(
+    myMenuContent, Anchor::Center, offset);
+    
     m_mainLayer->updateLayout();
 
-
-
     // Finding if the the current level is already linked with the previous
-    std::set<std::string> currentLinkedList = Mod::get()->getSavedValue<std::set<std::string>>(m_idCurrent + "-linked");
+    std::set<std::string> currentLinkedList 
+    = Mod::get()->getSavedValue<std::set<std::string>>(
+    m_idCurrent + "-linked");
 
     m_isLinked = false;
     for (std::string id : currentLinkedList) {
@@ -102,7 +114,8 @@ bool WRLinkMenu::init() {
 }
 
 
-WRLinkMenu* WRLinkMenu::create(std::string idCurrent, std::string nameCurrent, std::string idPrevious, std::string namePrevious) {
+WRLinkMenu* WRLinkMenu::create(std::string idCurrent, std::string nameCurrent
+    , std::string idPrevious, std::string namePrevious) {
     auto ret = new WRLinkMenu();
     ret->m_idCurrent = idCurrent;
     ret->m_nameCurrent = nameCurrent;
@@ -129,7 +142,8 @@ void WRLinkMenu::unlinkPreviousPopup() {
     auto alert = geode::createQuickPopup(
         "Un-Link Previous Level?",            // title
         "Do you want to un-link \"" 
-        + this->m_namePrevious + "\" from " + this->m_nameCurrent + " and all other levels?",   // content
+        + this->m_namePrevious + "\" from " 
+        + this->m_nameCurrent + " and all other levels?",   // content
         "Cancel", "Un-Link",      // buttons
         [this](auto, bool btn2) {
             if (btn2) {
@@ -155,7 +169,8 @@ void WRLinkMenu::onUnLinkCurrent(CCObject*) {
 
 void WRLinkMenu::onLinkedList(CCObject*){
 
-    std::set<std::string> linkedList = Mod::get()->getSavedValue<std::set<std::string>>(m_idCurrent+"-linked");
+    std::set<std::string> linkedList 
+    = Mod::get()->getSavedValue<std::set<std::string>>(m_idCurrent+"-linked");
     linkedList.erase(m_idCurrent);
 
     std::set<std::string>::iterator id;
@@ -167,10 +182,13 @@ void WRLinkMenu::onLinkedList(CCObject*){
     int size = linkedList.size();
 
     
-
+    // Listing the list of levels 
     int i = 0;
     for (id = linkedList.begin(); id != linkedList.end(); id++) {
-        std::string localString = Mod::get()->getSavedValue<std::string>(*id + "-levelname", "");
+        std::string localString 
+        = Mod::get()->getSavedValue<std::string>(
+        *id + "-levelname", "");
+
         if (localString!="") {
             levelsString += localString;
         } else {
@@ -220,18 +238,15 @@ void WRLinkMenu::onResetWinrate(CCObject*) {
                     defaultTimeLength[i] = -1;
                 }
 
-                Mod::get()->setSavedValue(id + "-winrate", defaultWinrate);
-				Mod::get()->setSavedValue(id+ "-datacount", defaultDataCount);
-				Mod::get()->setSavedValue(id + "-timelength", defaultTimeLength);
+                Mod::get()->setSavedValue(id + "-winrate"
+                , defaultWinrate);
+				Mod::get()->setSavedValue(id+ "-datacount"
+                , defaultDataCount);
+				Mod::get()->setSavedValue(id + "-timelength"
+                , defaultTimeLength);
             }
         }
     );
-
-    return;
-}
-
-void WRLinkMenu::onLink(CCObject*) {
-    
 
     return;
 }
@@ -266,13 +281,18 @@ void WRLinkMenu::linkPopup2() {
 
         auto alert = geode::createQuickPopup(
 			"Choose Levels Winrate",            // title
-			"Choose which levels winrate you want to keep for both. \n\"" + this->m_nameCurrent + "\" (" + this->m_idCurrent + ")\n\"" + this->m_namePrevious + "\" (" + this->m_idPrevious + ")\n(Escape to exit)",   // content
+			"Choose which levels winrate you want to keep for both. \n\"" 
+            + this->m_nameCurrent + "\" (" + this->m_idCurrent + ")\n\"" 
+            + this->m_namePrevious + "\" (" 
+            + this->m_idPrevious + ")\n(Escape to exit)",   // content
 			name1, name2,      // buttons
 			[this](auto, bool btn2) {
 				if (btn2) {
-                    this->linkLevel(this->m_idPrevious,this->m_idCurrent);
+                    this->linkLevel(this->m_idPrevious
+                    ,this->m_idCurrent);
 				} else {
-                    this->linkLevel(this->m_idCurrent,this->m_idPrevious);
+                    this->linkLevel(this->m_idCurrent
+                    ,this->m_idPrevious);
                 }
                 this->m_isLinked = true;
 			}
@@ -280,7 +300,8 @@ void WRLinkMenu::linkPopup2() {
     }
 
 void WRLinkMenu::unlinkLevel(std::string level) {
-    auto oldLinked = Mod::get()->getSavedValue<std::set<std::string>>(level + "-linked");
+    auto oldLinked 
+    = Mod::get()->getSavedValue<std::set<std::string>>(level + "-linked");
     std::set<std::string> empty;
     empty.insert(level);
     oldLinked.erase(level);
@@ -295,10 +316,14 @@ void WRLinkMenu::unlinkLevel(std::string level) {
 
 
 void WRLinkMenu::linkLevel(std::string levelKeep, std::string levelDicard) {
-    auto dataLevelKeep = Mod::get()->getSavedValue<std::set<std::string>>(levelKeep + "-linked");
+    auto dataLevelKeep 
+    = Mod::get()->getSavedValue<std::set<std::string>>(levelKeep + "-linked");
     dataLevelKeep.insert(levelKeep);
 
-    auto dataLevelDicard = Mod::get()->getSavedValue<std::set<std::string>>(levelDicard + "-linked");
+    auto dataLevelDicard 
+    = Mod::get()->getSavedValue<std::set<std::string>>(
+    levelDicard + "-linked");
+    
     dataLevelDicard.insert(levelDicard);
 
     for (std::string id : dataLevelDicard) {
@@ -316,9 +341,15 @@ void WRLinkMenu::linkLevel(std::string levelKeep, std::string levelDicard) {
         tempKeepTimeLength[i] = -1;
     }
 
-    tempKeepWinrate = Mod::get()->getSavedValue<std::array<float,100>>(levelKeep + "-winrate", tempKeepWinrate);
-    tempKeepDataCount = Mod::get()->getSavedValue<std::array<int,100>>(levelKeep + "-datacount", tempKeepDataCount);
-    tempKeepTimeLength = Mod::get()->getSavedValue<std::array<float,100>>(levelKeep + "-timelength", tempKeepTimeLength);
+    tempKeepWinrate = Mod::get()->getSavedValue<std::array<float,100>>(
+    levelKeep + "-winrate", tempKeepWinrate);
+
+    tempKeepDataCount = Mod::get()->getSavedValue<std::array<int,100>>(
+    levelKeep + "-datacount", tempKeepDataCount);
+
+    tempKeepTimeLength = Mod::get()->getSavedValue<std::array<float,100>>(
+    levelKeep + "-timelength", tempKeepTimeLength);
+
 
     for (std::string id : dataLevelKeep) {
         Mod::get()->setSavedValue(id + "-winrate", tempKeepWinrate);

@@ -21,6 +21,7 @@ protected:
     void onStats(CCObject*);
 
 public:
-    static WRMenu* create(std::string idCurrent, std::string nameCurrent, std::string idPrevious, std::string namePrevious);
+    static WRMenu* create(std::string idCurrent, std::string nameCurrent
+    , std::string idPrevious, std::string namePrevious);
 
 };

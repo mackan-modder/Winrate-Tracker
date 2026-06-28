@@ -56,6 +56,11 @@
             "control": {
                 "slider": true
             }
+        },
+        "time-format": {
+            "name": "Use Days and Years",
+            "type": "bool",
+            "default": false
         }
 	},"resources": {
         "sprites": [
