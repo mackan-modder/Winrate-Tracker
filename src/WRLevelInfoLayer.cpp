@@ -86,7 +86,7 @@ class $modify(WRLevelInfoLayer, LevelInfoLayer) {
             this,
             menu_selector(WRLevelInfoLayer::onLinkButton)
         );
-        m_fields->m_buttonMenu->setID("wr-link-button-level");
+        m_fields->m_buttonMenu->setID("wr-menu-button-level");
         m_fields->m_buttonMenu->setZOrder(1);
         m_fields->m_buttonMenu->setScale(0.8);
         m_fields->m_buttonMenu->setVisible(true);

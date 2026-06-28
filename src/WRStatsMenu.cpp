@@ -66,7 +66,7 @@ bool WRStatsMenu::init() {
         this,
         menu_selector(WRStatsMenu::onImpact)
     );
-    m_buttonImpact->setID("wr-button-Impact");
+    m_buttonImpact->setID("wr-button-improvements");
     m_buttonImpact->setZOrder(1);
     m_buttonImpact->setScale(2);
     m_buttonImpact->setVisible(true);

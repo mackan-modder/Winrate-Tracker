@@ -84,7 +84,7 @@ class $modify(WREditLevelLayer, EditLevelLayer) {
             this,
             menu_selector(WREditLevelLayer::onLinkButton)
         );
-        m_fields->m_buttonMenu->setID("wr-link-button-edit");
+        m_fields->m_buttonMenu->setID("wr-menu-button-edit");
         m_fields->m_buttonMenu->setZOrder(1);
         m_fields->m_buttonMenu->setVisible(true);
 

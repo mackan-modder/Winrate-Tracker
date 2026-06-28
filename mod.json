@@ -12,6 +12,9 @@
 	"developer": "Mackan",
 	"description": "Winrate tracking using a EMA algorithm",
     "tags":["gameplay","offline","interface","utility"],
+    "links": {
+        "source": "https://github.com/mackan-modder/Winrate-Tracker"
+    },
 	"dependencies": {
 		"geode.node-ids": ">=v1.23.3",
 		"cvolton.level-id-api": ">=2.0.0"
