@@ -20,6 +20,8 @@ There is support for linking levels together using the menu with a percentage si
 
 The <cg>winrate</cg> gets updated with a Exponential Moving Average(EMA) algorithm and will lag behind your "true" <cg>winrate</cg> as you improve on the level. At any point it will take your winrate based on your last 15 attempts or so(you can change how many recent attempts are used by changing Alpha in the settings).
 
+When playing from a startposition of checkpoint, I've added a safezone where winrate doesn't get updated for 1.2 seconds(you can change this in the settings).
+
 Special thanks to: 
 - Death Tracker
 - Playtime Tracker
