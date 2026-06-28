@@ -26,6 +26,7 @@ class $modify(WRPlayLayer, PlayLayer){
 		bool m_currentIndexActive;
 		float m_startingPercentage = -1;
 		int m_endOfSafeZone = -1;
+		double m_safeZoneDuration = 1.2;
 		CCNodeRGBA* m_parentContainer = nullptr;
 		CCLabelBMFont* m_winrateLabel = nullptr;
 		CCLabelBMFont* m_rarityLabel = nullptr;
@@ -62,6 +63,7 @@ class $modify(WRPlayLayer, PlayLayer){
         // log::info("init()");
 
 		m_fields->m_alpha = Mod::get()->getSettingValue<float>("settings-alpha");
+		m_fields->m_safeZoneDuration = Mod::get()->getSettingValue<double>("settings-safezone");
 
 		for(int i=0;i<100;i++){	
 			m_fields->m_percentageWinrate[i] = 1.0;
@@ -145,51 +147,62 @@ class $modify(WRPlayLayer, PlayLayer){
 
 		m_fields->m_parentContainer->setID("parent-label"_spr);
 
-		if (Mod::get()->getSettingValue<bool>("winrate-dynamic")) {
-			m_fields->m_winrateLabel 
-			= CCLabelBMFont::create("Winrate is TEST", "bigFont.fnt");
 
-			m_fields->m_parentContainer->addChild(m_fields->m_winrateLabel);
+		if (!level->isPlatformer() 
+		|| Mod::get()->getSettingValue<bool>("settings-platformer")) {
+			if (Mod::get()->getSettingValue<bool>("winrate-dynamic")) {
+				m_fields->m_winrateLabel 
+				= CCLabelBMFont::create("Winrate is TEST"
+				, "bigFont.fnt");
 
-			m_fields->m_winrateLabel->setAnchorPoint({0,0});
-			
+				m_fields->m_parentContainer
+				->addChild(m_fields->m_winrateLabel);
+
+				m_fields->m_winrateLabel->setAnchorPoint({0,0});
+				
+				m_fields->m_parentContainer->updateLayout();
+			}
+			if (Mod::get()->getSettingValue<bool>("winrate-flat")) {
+				m_fields->m_winrateLabelFlat 
+				= CCLabelBMFont::create("Winrate is TEST"
+				, "bigFont.fnt");
+
+				m_fields->m_parentContainer
+				->addChild(m_fields->m_winrateLabelFlat);
+
+				m_fields->m_winrateLabelFlat->setAnchorPoint({0,0});
+				
+				m_fields->m_parentContainer->updateLayout();
+			}
+			if (Mod::get()->getSettingValue<bool>("completion-time")) {
+				m_fields->m_completionTimeLabel 
+				= CCLabelBMFont::create("Time from 0 to 100 is TEST"
+				, "bigFont.fnt");
+
+				m_fields->m_parentContainer
+				->addChild(m_fields->m_completionTimeLabel);
+
+				m_fields->m_completionTimeLabel->setAnchorPoint({0,0});
+			}
+			if (Mod::get()->getSettingValue<bool>("rarity-label")) {
+				m_fields->m_rarityLabel 
+				= CCLabelBMFont::create("Run Rarity is TEST"
+				, "bigFont.fnt");
+
+				m_fields->m_parentContainer
+				->addChild(m_fields->m_rarityLabel);
+
+				m_fields->m_rarityLabel->setAnchorPoint({0,0});
+				
+				m_fields->m_parentContainer->updateLayout();
+			}
+
+			m_fields->m_parentContainer
+			->setOpacity(static_cast<int>(
+			255.0*Mod::get()->getSettingValue<float>("label-opacity")));
+
 			m_fields->m_parentContainer->updateLayout();
 		}
-		if (Mod::get()->getSettingValue<bool>("winrate-flat")) {
-			m_fields->m_winrateLabelFlat 
-			= CCLabelBMFont::create("Winrate is TEST", "bigFont.fnt");
-
-			m_fields->m_parentContainer->addChild(m_fields->m_winrateLabelFlat);
-
-			m_fields->m_winrateLabelFlat->setAnchorPoint({0,0});
-			
-			m_fields->m_parentContainer->updateLayout();
-		}
-		if (Mod::get()->getSettingValue<bool>("completion-time")) {
-			m_fields->m_completionTimeLabel 
-			= CCLabelBMFont::create("Time from 0 to 100 is TEST", "bigFont.fnt");
-
-			m_fields->m_parentContainer->addChild(m_fields->m_completionTimeLabel);
-
-			m_fields->m_completionTimeLabel->setAnchorPoint({0,0});
-		}
-		if (Mod::get()->getSettingValue<bool>("rarity-label")) {
-			m_fields->m_rarityLabel 
-			= CCLabelBMFont::create("Run Rarity is TEST", "bigFont.fnt");
-
-			m_fields->m_parentContainer->addChild(m_fields->m_rarityLabel);
-
-			m_fields->m_rarityLabel->setAnchorPoint({0,0});
-			
-			m_fields->m_parentContainer->updateLayout();
-		}
-		
-		m_fields->m_parentContainer
-		->setOpacity(static_cast<int>(
-		255.0*Mod::get()->getSettingValue<float>("label-opacity")));
-
-		m_fields->m_parentContainer->updateLayout();
-
 
 		auto lastElementWithZeroData 
 		= std::find(m_fields->m_percentageDataCount.begin()
@@ -276,8 +289,8 @@ class $modify(WRPlayLayer, PlayLayer){
 
 		// Logic for adding a safe region in the beginning of each attempt 
 		// from practice mode or startpos.
-		const double safeTime = 1.6;
-		if (m_fields->m_endOfSafeZone == -1 && m_attemptTime>safeTime) {
+		if (m_fields->m_endOfSafeZone == -1 
+		&& m_attemptTime>m_fields->m_safeZoneDuration) {
 			m_fields->m_endOfSafeZone = getCurrentPercentInt()+1;
 			log::info("{}",m_fields->m_endOfSafeZone);
 		}

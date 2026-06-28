@@ -15,6 +15,11 @@
 		"geode.node-ids": ">=v1.23.3",
 		"cvolton.level-id-api": ">=2.0.0"
 	},"settings": {
+        "title-labels": {
+            "type": "title",
+            "name": "Label Settings",
+            "description": "These settings control which labels are displayed"
+        },
 		"label-opacity": {
             "name": "Label Opacity",
             "description": "Changes the opacity of the labels",
@@ -26,25 +31,35 @@
                 "slider": true
             }
         },
-        "completion-time": {
-            "name": "Enable Estimated Completion Time",
-            "type": "bool",
-            "default": true
-        },
         "winrate-flat": {
             "name": "Enable Winrate",
             "type": "bool",
             "default": true
         },
         "winrate-dynamic": {
-            "name": "Enable Dynamic Winrate",
+            "name": "Enable Winrate Now",
             "type": "bool",
             "default": true
+        },
+        "completion-time": {
+            "name": "Enable Estimated Completion Time",
+            "type": "bool",
+            "default": true
+        },
+        "time-format": {
+            "name": "Use Days and Years",
+            "type": "bool",
+            "default": false
         },
         "rarity-label": {
             "name": "Enable Run Rarity Label",
             "type": "bool",
             "default": true
+        },
+        "title-advanced": {
+            "type": "title",
+            "name": "Advanced Settings",
+            "description": "These settings change the behaviour of winrate tracking"
         },
         "settings-alpha": {
             "name": "Alpha value",
@@ -54,11 +69,20 @@
             "min": 0.001,
             "max": 0.5,
             "control": {
-                "slider": true
+                "arrows": false,
+                "slider": true,
+                "slider-step": 0.01
             }
         },
-        "time-format": {
-            "name": "Use Days and Years",
+        "settings-safezone": {
+            "name": "Safezone Duration (seconds)",
+            "description": "Changes the duration of the safezone. The safezone is activated whenever you play from a startpos or checkpoint and prevents winrate changes within the safezone. The point is that when respawning to a startposition, you will often die in ways you don't from 0.",
+            "type": "float",
+            "default": 1.2
+        },
+        "settings-platformer": {
+            "name": "Enable on Platformer Mode",
+            "description": "Enables the mod for platformer. The mod isn't meant for that, but it could potentially be used on autoscroll levels with no checkpoint.",
             "type": "bool",
             "default": false
         }
