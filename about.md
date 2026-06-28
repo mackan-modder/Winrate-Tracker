@@ -2,7 +2,7 @@
 
 <cy>Disclaimer! The creation of this mod has been streamed/recorded on my youtube channel: [Here is a link to the playlist! Come check it out if you'd like.](https://www.youtube.com/playlist?list=PLPUCtOoQdh8BEpDWf24AqSjPZfKtrFoCi)</cg>
 
-This mod <cg>tracks winrate</cg> and estimates your <cy>time to get 100%</cy>. 
+This mod <cg>tracks winrate</cg> using a EMA algorithm estimates your <cy>time to get 100%</cy>. 
 
 The <cg>winrate</cg> gets presented with text labels in the bottom left corner. 
 
@@ -18,7 +18,7 @@ Extra labels include:
 
 There is support for linking levels together using the menu with a percentage sign on the level page.
 
-The <cg>winrate</cg> gets updated with a Exponential Moving Average and will lag behind your "true" <cg>winrate</cg> as you improve on the level. 
+The <cg>winrate</cg> gets updated with a Exponential Moving Average(EMA) algorithm and will lag behind your "true" <cg>winrate</cg> as you improve on the level. At any point it will take your winrate based on your last 15 attempts or so(you can change how many recent attempts are used by changing Alpha in the settings).
 
 Special thanks to: 
 - Death Tracker
