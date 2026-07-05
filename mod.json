@@ -8,7 +8,7 @@
 	},
 	"id": "mackan.winrate-tracker",
 	"name": "Winrate Tracker",
-	"version": "v1.0.0",
+	"version": "v1.0.1",
 	"developer": "Mackan",
 	"description": "Winrate tracking using a EMA algorithm",
     "tags":["gameplay","offline","interface","utility"],
@@ -19,23 +19,11 @@
 		"geode.node-ids": ">=v1.23.3",
 		"cvolton.level-id-api": ">=2.0.0"
 	},"settings": {
-        "title-labels": {
+        "title-enable": {
             "type": "title",
-            "name": "Label Settings",
+            "name": "Enable Labels",
             "description": "These settings control which labels are displayed"
-        },
-		"label-opacity": {
-            "name": "Label Opacity",
-            "description": "Changes the opacity of the labels",
-            "type": "float",
-            "default": 0.4,
-            "min": 0,
-            "max": 1,
-            "control": {
-                "slider": true
-            }
-        },
-        "winrate-flat": {
+        },"winrate-flat": {
             "name": "Enable Winrate",
             "type": "bool",
             "default": true
@@ -50,17 +38,50 @@
             "type": "bool",
             "default": true
         },
-        "time-format": {
-            "name": "Use Days and Years",
-            "type": "bool",
-            "default": false
-        },
         "rarity-label": {
             "name": "Enable Run Rarity Label",
             "type": "bool",
             "default": true
+        },"title-labels": {
+            "type": "title",
+            "name": "Text Settings",
+            "description": "Settings controlling the visuals of the labels"
+        },"label-corner": {
+            "type": "string",
+            "name": "Label Corner",
+            "default": "Bottom Left",
+            "one-of": ["Bottom Left", "Bottom Right", "Top Left", "Top Right"]
         },
-        "title-advanced": {
+		"label-opacity": {
+            "name": "Label Opacity",
+            "description": "Changes the opacity of the labels",
+            "type": "float",
+            "default": 0.4,
+            "min": 0,
+            "max": 1,
+            "control": {
+                "slider": true
+            }
+        },
+		"label-size": {
+            "name": "Label Size",
+            "description": "Changes the size of the labels",
+            "type": "float",
+            "default": 1,
+            "min": 0.2,
+            "max": 2,
+            "control": {
+                "slider": true
+            }
+        },"title-format": {
+            "type": "title",
+            "name": "Formatting Settings",
+            "description": "These settings control formatting for the text labels"
+        },"time-format": {
+            "name": "Use Days and Years",
+            "type": "bool",
+            "default": false
+        },"title-advanced": {
             "type": "title",
             "name": "Advanced Settings",
             "description": "These settings change the behaviour of winrate tracking"

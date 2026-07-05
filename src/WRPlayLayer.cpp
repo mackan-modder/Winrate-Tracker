@@ -128,18 +128,62 @@ class $modify(WRPlayLayer, PlayLayer){
 		m_fields->m_parentContainer->setCascadeColorEnabled(true);
 		m_fields->m_parentContainer->setCascadeOpacityEnabled(true);
 
-		m_fields->m_parentContainer->setLayout(
-			ColumnLayout::create()
-				->setGap(10.f)->setGrowCrossAxis(true)
-				->setAxisAlignment(AxisAlignment::Start)
-				->setCrossAxisLineAlignment(AxisAlignment::Start));
 
+		std::string corner 
+		= Mod::get()->getSettingValue<std::string>("label-corner");
+
+		
 		auto uiLayer = this->getChildByID("UILayer");
+		
+		if (corner == "Bottom Left") { // Done
+			m_fields->m_parentContainer->setLayout(
+				ColumnLayout::create()
+					->setGap(10.f)->setGrowCrossAxis(true)
+					->setAxisAlignment(AxisAlignment::Start)
+					->setCrossAxisLineAlignment(AxisAlignment::Start));
 
-		m_fields->m_parentContainer->setPosition(
-		uiLayer->getPosition() + CCPoint { 10.0f, 10.0f });
+			m_fields->m_parentContainer->setPosition(
+			uiLayer->getPosition() + CCPoint { 10.0f, 10.0f });
+		} else if (corner == "Bottom Right") {
+			m_fields->m_parentContainer->setLayout(
+				ColumnLayout::create()
+					->setGap(10.f)->setGrowCrossAxis(true)
+					->setAxisAlignment(AxisAlignment::Start)
+					->setCrossAxisLineAlignment(AxisAlignment::End));
 
-		m_fields->m_parentContainer->setScale(0.35);
+			m_fields->m_parentContainer->setAnchorPoint(CCPoint{1.0f,0.0f});
+			m_fields->m_parentContainer->setPosition(
+			uiLayer->getPosition() 
+			+ CCPoint { uiLayer->getContentWidth() - 10.0f,10.0f });
+		} else if (corner == "Top Right") {
+			m_fields->m_parentContainer->setLayout(
+				ColumnLayout::create()
+					->setGap(10.f)->setGrowCrossAxis(true)
+					->setAxisAlignment(AxisAlignment::End)
+					->setCrossAxisLineAlignment(AxisAlignment::End));
+
+			m_fields->m_parentContainer->setAnchorPoint(CCPoint{1.0f,1.0f});
+			m_fields->m_parentContainer->setPosition(
+			uiLayer->getPosition() 
+			+ CCPoint { uiLayer->getContentWidth()-10.0f 
+			, uiLayer->getContentHeight()-10.0f });
+		} else {
+			m_fields->m_parentContainer->setLayout(
+				ColumnLayout::create()
+					->setGap(10.f)->setGrowCrossAxis(true)
+					->setAxisAlignment(AxisAlignment::End)
+					->setCrossAxisLineAlignment(AxisAlignment::Start));
+
+			m_fields->m_parentContainer->setAnchorPoint(CCPoint{0.0f,1.0f});
+			m_fields->m_parentContainer->setPosition(
+			uiLayer->getPosition() 
+			+ CCPoint { 10.0f, uiLayer->getContentHeight()-10.0f });
+		}
+
+		float labelSize = 
+		0.35 * Mod::get()->getSettingValue<float>("label-size");
+
+		m_fields->m_parentContainer->setScale(labelSize);
 		m_fields->m_parentContainer->setContentHeight(700);
 		m_fields->m_parentContainer->setContentWidth(700);
 
@@ -152,7 +196,7 @@ class $modify(WRPlayLayer, PlayLayer){
 		|| Mod::get()->getSettingValue<bool>("settings-platformer")) {
 			if (Mod::get()->getSettingValue<bool>("winrate-dynamic")) {
 				m_fields->m_winrateLabel 
-				= CCLabelBMFont::create("Winrate is TEST"
+				= CCLabelBMFont::create("Winrate Now is TEST"
 				, "bigFont.fnt");
 
 				m_fields->m_parentContainer
@@ -409,6 +453,8 @@ class $modify(WRPlayLayer, PlayLayer){
 		} else {
 			return fmt::format("{:.3g}",number) ;
 		}
+		
+		
 
 		return "";
 	}
@@ -676,7 +722,7 @@ class $modify(WRPlayLayer, PlayLayer){
 		} else {
 			if (time>60*60) {
 				time /= 60*60;
-				timeString = fmt::format("{:.3g}",time);
+				timeString = formatLargeNumbers(time);
 				timeUnit = "hours";
 			} else if (time>60) {
 				time /= 60;

@@ -1,3 +1,8 @@
+# 1.0.1
+- Fixed formating of hours("Use Days And Years Disabled")
+- Re-ordered Settings
+- Added settings for moving and resizing text labels
+
 # 1.0.0
 - Initial Release!
 Features include: 
