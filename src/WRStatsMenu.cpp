@@ -137,7 +137,7 @@ void WRStatsMenu::onImpact(CCObject*) {
         /std::max({static_cast<double>(winrate[i]),LOWERLIMIT});
     }
 
-    log::info("{}",expectedTimeNormal);
+    // log::info("{}",expectedTimeNormal);
     
 
     for (int i = 0;i<10;i++) {
@@ -295,7 +295,6 @@ void WRStatsMenu::onOverall(CCObject*) {
     std::string StatsString = "";
 
     if (hasData) {
-        
         time_t timestamp = time(nullptr);
         tm tm = geode::localtime(timestamp);
         StatsString += fmt::to_string(tm.tm_year+1900) + "-";
@@ -449,7 +448,7 @@ std::string WRStatsMenu::formatTime(double time) {
 		} else {
 			if (time>60*60) {
 				time /= 60*60;
-				timeString = fmt::format("{:.3g}",time);
+				timeString = formatLargeNumbers(time);
 				timeUnit = "hours";
 			} else if (time>60) {
 				time /= 60;

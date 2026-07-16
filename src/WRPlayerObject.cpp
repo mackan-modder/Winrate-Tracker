@@ -6,7 +6,7 @@ class $modify(WRPlayerObject, PlayerObject){
     void playerDestroyed(bool noEffects) {
         if (!PlayLayer::get()) return;
 
-        geode::log::info("playerDestroyed()");
+        // log::info("playerDestroyed()");
 
         auto pl = static_cast<WRPlayLayer*>(PlayLayer::get());
 
@@ -17,8 +17,9 @@ class $modify(WRPlayerObject, PlayerObject){
         // log::info("destroyed {} {}",pl->m_fields->m_startingPercentage 
         // ,pl->m_fields->m_endOfSafeZone);
         
-        pl->updateWinrate(startPercentage,pl->getCurrentPercentInt());
+        pl->updateWinrate(startPercentage,pl->getCurrentPercentInt(),false);
         pl->updateChange();
         PlayerObject::playerDestroyed(noEffects);
     }
 };
+

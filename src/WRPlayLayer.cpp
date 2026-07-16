@@ -62,6 +62,24 @@ class $modify(WRPlayLayer, PlayLayer){
 
         // log::info("init()");
 
+		this->addEventListener(
+            KeybindSettingPressedEventV3(Mod::get(), "keybind-reset-and-record"),
+            [this](Keybind const& keybind, bool down, bool repeat, double timestamp) {
+                if (down && !repeat && !this->m_playerDied) {
+
+					int startPercentage 
+					= (this->m_fields->m_startingPercentage==0.0) ? 
+					0 : this->m_fields->m_endOfSafeZone;
+
+					this->updateWinrate(startPercentage,this->getCurrentPercentInt(),true);
+					this->m_attempts--;
+					this->m_level->setAttempts(static_cast<int>(this->m_level->m_attempts)-1);
+
+                    this->resetLevel();
+                }
+            }
+        );
+
 		m_fields->m_alpha = Mod::get()->getSettingValue<float>("settings-alpha");
 		m_fields->m_safeZoneDuration = Mod::get()->getSettingValue<double>("settings-safezone");
 
@@ -112,8 +130,8 @@ class $modify(WRPlayLayer, PlayLayer){
 		Mod::get()->setSavedValue(levelId + "-levelname",m_fields->m_levelName);
 
 		for (std::string id : dataAll) {
-			log::info("{} 1 {}",id, 
-			Mod::get()->getSavedValue<std::string>(id + "-levelname", ""));
+			// log::info("{} 1 {}",id, 
+			// Mod::get()->getSavedValue<std::string>(id + "-levelname", ""));
 		}
 
 		m_fields->m_measuringTimeLength = false;
@@ -277,7 +295,7 @@ class $modify(WRPlayLayer, PlayLayer){
 
 			m_fields->m_endOfSafeZone = -1;
 			m_fields->m_startingPercentage = getCurrentPercentInt();
-			log::info("reset {}",getCurrentPercentInt());
+			// log::info("reset {}",getCurrentPercentInt());
 		}
 
 		return true;
@@ -286,7 +304,8 @@ class $modify(WRPlayLayer, PlayLayer){
 	void levelComplete() {
 		int startPercentage 
 		= (m_fields->m_startingPercentage==0.0) ? 0 : m_fields->m_endOfSafeZone;
-		updateWinrate(startPercentage,100);
+
+		updateWinrate(startPercentage,100,true);
 		updateChange();
 
 		PlayLayer::levelComplete();
@@ -319,13 +338,13 @@ class $modify(WRPlayLayer, PlayLayer){
 			m_fields->m_endOfSafeZone = -1;
 			m_fields->m_startingPercentage = getCurrentPercentInt();
 
-			log::info("reset {}",getCurrentPercentInt());
+			// log::info("reset {}",getCurrentPercentInt());
 		}
 	}
 
 	void postUpdate(float dt) {
 
-		updateDynamicTextLabels();
+		if (!m_playerDied) updateDynamicTextLabels();
 
 		if (m_fields->m_measuringTimeLength){
 			measureTimeUpdate(dt);
@@ -336,7 +355,7 @@ class $modify(WRPlayLayer, PlayLayer){
 		if (m_fields->m_endOfSafeZone == -1 
 		&& m_attemptTime>m_fields->m_safeZoneDuration) {
 			m_fields->m_endOfSafeZone = getCurrentPercentInt()+1;
-			log::info("{}",m_fields->m_endOfSafeZone);
+			// log::info("{}",m_fields->m_endOfSafeZone);
 		}
 
 		PlayLayer::postUpdate(dt);
@@ -459,21 +478,22 @@ class $modify(WRPlayLayer, PlayLayer){
 		return "";
 	}
 
-	void updateWinrate(int start, int end) {
-		
-        log::info("updateWinrate({},{})",start,end);
+	void updateWinrate(int start, int end, bool passed) {
+        //log::info("updateWinrate({},{})",start,end);
+
 		if (start==-1 || (end<start)) {
 			// log::info("SafeZoned!");
 			return;
 		}
+
 		for(int i=start;i<end;i++){
 			updateWinratePercentage(i,true,false);
 		}
 
 		
 		if (end<100) {
-			updateWinratePercentage(end, false,false);
-		}
+			updateWinratePercentage(end, passed,false);
+		} 
 	}
 
     void updateWinratePercentage(int index, bool passed, bool temp) {
@@ -763,3 +783,20 @@ class $modify(WRPlayLayer, PlayLayer){
 			}
 	}
 };
+
+// $on_game(Loaded) {
+//     listenForKeybindSettingPresses("keybind-reset-and-record", [](Keybind const& keybind, bool down, bool repeat, double timestamp) {
+//         if (down && !repeat) {
+// 			if (!PlayLayer::get()) return;
+// 			auto pl = static_cast<WRPlayLayer*>(PlayLayer::get());
+
+// 			int startPercentage 
+// 			= (pl->m_fields->m_startingPercentage==0.0) ? 
+// 			0 : pl->m_fields->m_endOfSafeZone;
+
+// 			pl->updateWinrate(startPercentage,pl->getCurrentPercentInt(),true);
+
+// 			pl->resetLevel();
+//         }
+//     });
+// }

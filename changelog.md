@@ -1,3 +1,10 @@
+# 1.0.2
+- Added a new keybind, "Reset and record run"
+- Fixed formatting bug in Overall Winrate
+- Fixed unintended behaviour for "Winrate Now" and "Run Rarity" when player dies
+- Changed run rarity name in settings
+- Removed log::info debug logs from release
+
 # 1.0.1
 - Fixed formating of hours("Use Days And Years Disabled")
 - Re-ordered Settings

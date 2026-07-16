@@ -39,9 +39,18 @@
             "default": true
         },
         "rarity-label": {
-            "name": "Enable Run Rarity Label",
+            "name": "Enable Run Rarity",
             "type": "bool",
             "default": true
+        },"title-keybinds": {
+            "type": "title",
+            "name": "Keybinds"
+        },"keybind-reset-and-record": {
+            "type": "keybind",
+            "name": "Reset and record run",
+            "default": ["-"],
+            "category": "gameplay",
+            "description": "This keybind allows you to reset while still keeping the increased winrate from passing parts in your run. Used to practice a part over and over without having to die or complete the level. Does not increase attempt count."
         },"title-labels": {
             "type": "title",
             "name": "Text Settings",
