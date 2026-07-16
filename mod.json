@@ -8,7 +8,7 @@
 	},
 	"id": "mackan.winrate-tracker",
 	"name": "Winrate Tracker",
-	"version": "v1.0.1",
+	"version": "v1.0.2",
 	"developer": "Mackan",
 	"description": "Winrate tracking using a EMA algorithm",
     "tags":["gameplay","offline","interface","utility"],
