@@ -1,3 +1,6 @@
+# 1.0.3
+- Fixed visual bug when dying after using the "Reset and record run"-keybind.
+
 # 1.0.2
 - Added a new keybind, "Reset and record run"
 - Fixed formatting bug in Overall Winrate
