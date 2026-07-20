@@ -72,6 +72,7 @@ class $modify(WRPlayLayer, PlayLayer){
 					0 : this->m_fields->m_endOfSafeZone;
 
 					this->updateWinrate(startPercentage,this->getCurrentPercentInt(),true);
+					this->updateChange();
 					this->m_attempts--;
 					this->m_level->setAttempts(static_cast<int>(this->m_level->m_attempts)-1);
 
