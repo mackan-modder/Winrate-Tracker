@@ -16,8 +16,15 @@ class $modify(WRPlayerObject, PlayerObject){
 
         // log::info("destroyed {} {}",pl->m_fields->m_startingPercentage 
         // ,pl->m_fields->m_endOfSafeZone);
-        
-        pl->updateWinrate(startPercentage,pl->getCurrentPercentInt(),false);
+
+        bool isPaused 
+		= Mod::get()->getSettingValue<bool>("winrate-tracking-bool");
+
+        if (!isPaused) {
+            pl->updateWinrate
+            (startPercentage,pl->getCurrentPercentInt(),false);
+        }
+
         pl->updateChange();
         PlayerObject::playerDestroyed(noEffects);
     }

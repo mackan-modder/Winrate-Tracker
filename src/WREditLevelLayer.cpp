@@ -56,7 +56,7 @@ class $modify(WREditLevelLayer, EditLevelLayer) {
 			ourLevelId = EditorIDs::getID(level);
 		}
 
-        m_fields->m_idCurrent = fmt::to_string(ourLevelId);
+        m_fields->m_idCurrent = fmt::to_string(ourLevelId) + "-editor";
         m_fields->m_nameCurrent = level->m_levelName;
         
         m_fields->m_idPrevious = Mod::get()->getSavedValue<std::string>(

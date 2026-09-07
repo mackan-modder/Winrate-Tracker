@@ -63,9 +63,12 @@ class $modify(WRPlayLayer, PlayLayer){
         // log::info("init()");
 
 		this->addEventListener(
-            KeybindSettingPressedEventV3(Mod::get(), "keybind-reset-and-record"),
-            [this](Keybind const& keybind, bool down, bool repeat, double timestamp) {
-                if (down && !repeat && !this->m_playerDied) {
+            KeybindSettingPressedEventV3(Mod::get()
+			, "keybind-reset-and-record"),
+            [this](Keybind const& keybind
+			, bool down, bool repeat, double timestamp) {
+
+                if (down && !repeat && !this->m_playerDied && this->canPauseGame()) {
 
 					int startPercentage 
 					= (this->m_fields->m_startingPercentage==0.0) ? 
@@ -81,8 +84,25 @@ class $modify(WRPlayLayer, PlayLayer){
             }
         );
 
-		m_fields->m_alpha = Mod::get()->getSettingValue<float>("settings-alpha");
-		m_fields->m_safeZoneDuration = Mod::get()->getSettingValue<double>("settings-safezone");
+		this->addEventListener(
+            KeybindSettingPressedEventV3(Mod::get()
+			, "keybind-tracking"),
+            [this](Keybind const& keybind, bool down
+			, bool repeat, double timestamp) {
+
+                if (down && !repeat) {
+                    Mod::get()->setSettingValue("winrate-tracking-bool"
+						,!Mod::get()->getSettingValue<bool>
+						("winrate-tracking-bool"));
+                }
+            }
+        );
+
+		m_fields->m_alpha 
+		= Mod::get()->getSettingValue<float>("settings-alpha");
+
+		m_fields->m_safeZoneDuration 
+		= Mod::get()->getSettingValue<double>("settings-safezone");
 
 		for(int i=0;i<100;i++){	
 			m_fields->m_percentageWinrate[i] = 1.0;
@@ -306,7 +326,13 @@ class $modify(WRPlayLayer, PlayLayer){
 		int startPercentage 
 		= (m_fields->m_startingPercentage==0.0) ? 0 : m_fields->m_endOfSafeZone;
 
-		updateWinrate(startPercentage,100,true);
+		bool isPaused 
+		= Mod::get()->getSettingValue<bool>("winrate-tracking-bool");
+
+		if (!isPaused) {
+			updateWinrate(startPercentage,100,true);
+		}
+
 		updateChange();
 
 		PlayLayer::levelComplete();
@@ -680,13 +706,22 @@ class $modify(WRPlayLayer, PlayLayer){
 		double differenceTime = newTime-m_fields->m_currentTime;
 		double differenceWinrate = newWinrate-m_fields->m_currentWinrate;
 
+		bool isPaused 
+		= Mod::get()->getSettingValue<bool>("winrate-tracking-bool");
+
 		if (m_fields->m_completionTimeLabel) {
 			std::string changesTime = m_fields->m_completionTimeLabelString;
-			
-			changesTime += ((differenceWinrate<0) ? " (+" : " (-") 
-			+ formatTime(std::abs(differenceTime)) + ")";
 
-			m_fields->m_completionTimeLabel->setString(changesTime.c_str());
+			if (differenceTime == 0) {
+				changesTime += ((isPaused) ? " (paused)" : " (safe)");
+			} else {
+			
+				changesTime += ((differenceWinrate<0) ? " (+" : " (-") 
+				+ formatTime(std::abs(differenceTime)) + ")";
+			}
+
+			m_fields->m_completionTimeLabel
+			->setString(changesTime.c_str());
 			
 			m_fields->m_currentTime = newTime;
 		}
@@ -694,25 +729,30 @@ class $modify(WRPlayLayer, PlayLayer){
 		if (m_fields->m_winrateLabelFlat) {
 			std::string changesWinrate = m_fields->m_winrateLabelFlatString;
 
-			if (m_fields->m_currentWinrate>0.1) {
-				changesWinrate += ((differenceWinrate>=0) ? " (+" : " (-") 
-				+ formatLargeNumbers(std::abs(differenceWinrate*100)) + "%)";
+			if (differenceWinrate == 0) {
+				changesWinrate += ((isPaused) ? " (paused)" : " (safe)");
 			} else {
-				double differenceWinrateInverse 
-				= 1/newWinrate-1/m_fields->m_currentWinrate;
+				if (m_fields->m_currentWinrate>0.1) {
+					changesWinrate += ((differenceWinrate>=0) ? " (+" : " (-") 
+					+ formatLargeNumbers
+					(std::abs(differenceWinrate*100)) + "%)";
+				} else {
+					double differenceWinrateInverse 
+					= 1/newWinrate-1/m_fields->m_currentWinrate;
 
-				changesWinrate += ((differenceWinrate<0) ? " (+" : " (-") 
-				+ formatLargeNumbers(std::abs(differenceWinrateInverse)) + ")";
+					changesWinrate += ((differenceWinrate<0) ? " (+" : " (-") 
+					+ formatLargeNumbers
+					(std::abs(differenceWinrateInverse)) + ")";
+				}
 			}
 
-			m_fields->m_winrateLabelFlat->setString(changesWinrate.c_str());
+			m_fields->m_winrateLabelFlat
+			->setString(changesWinrate.c_str());
 
 			m_fields->m_currentWinrate = newWinrate;
 		}
 		m_fields->m_parentContainer->updateLayout();
 	}	
-
-	
 
 	std::string formatTime(double time) {
 		std::string timeUnit;

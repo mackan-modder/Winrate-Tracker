@@ -19,7 +19,21 @@
 		"geode.node-ids": ">=v1.23.3",
 		"cvolton.level-id-api": ">=2.0.0"
 	},"settings": {
-        "title-enable": {
+        "title-tracking": {
+            "type": "title",
+            "name": "Enable Labels",
+            "description": "These settings control which labels are displayed"
+        },"winrate-tracking-bool": {
+            "name": "Pause Winrate Tracking",
+            "type": "bool",
+            "default": false
+        },"keybind-tracking": {
+            "type": "keybind",
+            "name": "Toggle Winrate Tracking",
+            "default": ["P"],
+            "category": "gameplay",
+            "description": "This keybind toggles winrate tracking."
+        },"title-enable": {
             "type": "title",
             "name": "Enable Labels",
             "description": "These settings control which labels are displayed"
