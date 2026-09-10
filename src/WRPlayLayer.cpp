@@ -698,7 +698,7 @@ class $modify(WRPlayLayer, PlayLayer){
 		if (m_fields->m_winrateLabelFlat) {
 			std::string changesWinrate = m_fields->m_winrateLabelFlatString;
 
-			if (differenceWinrate == 0) {
+			if (differenceWinrate == 0 && newWinrate!=1) {
 				changesWinrate += ((isPaused) ? " (paused)" : " (safe)");
 			} else {
 				if (m_fields->m_currentWinrate>0.1) {
