@@ -11,6 +11,8 @@ Three main labels are implemented in the mod:
 
 In the settings you can choose which labels to display. These labels lets you track your consistency as you play. More labels may be added in the future!
 
+The <cp>Winrate</cp> and <cp>Time for 100%</cp> can also be found in the menu located in the pause menu and level page.
+
 Extra labels include: 
 - <cp>Run Rarity</cp>. Says how <cy>rare</cy> your current run is. The inverse of <cr>Winrate now.</cr>
 
