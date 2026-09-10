@@ -1,3 +1,6 @@
+# 1.0.41
+- Updated about.md and moved down the link to my youtube
+
 # 1.0.4
 - Added a setting and keybind to pause tracking of winrate
 - Made it more clear when tracking is paused or if you died during the safe zone
