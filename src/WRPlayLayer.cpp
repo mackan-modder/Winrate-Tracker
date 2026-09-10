@@ -681,7 +681,7 @@ class $modify(WRPlayLayer, PlayLayer){
 		if (m_fields->m_completionTimeLabel) {
 			std::string changesTime = m_fields->m_completionTimeLabelString;
 
-			if (differenceTime == 0) {
+			if (differenceTime == 0 && newWinrate!=1) {
 				changesTime += ((isPaused) ? " (paused)" : " (safe)");
 			} else {
 			
