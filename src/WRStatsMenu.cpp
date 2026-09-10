@@ -284,10 +284,16 @@ void WRStatsMenu::onOverall(CCObject*) {
     
     double totalwinrate = 1;
     double timeFor100 = 1;
+    double timeForX = -1;
+    int toX = -1;
     bool hasData = true; 
+    if (dataCount[0]==0 || times[0]==-1) hasData = false;
     for (int i = 0;i<100;i++) {
-        if (dataCount[i]==0 || times[i]==-1) hasData = false;
         totalwinrate *= winrate[i];
+        if (times[i] == -1 && toX < 0) {
+            timeForX = timeFor100;
+            toX = i-1;
+        } 
         timeFor100 = (static_cast<double>(times[i])+timeFor100)
         /std::max({static_cast<double>(winrate[i]),LOWERLIMIT});
     }
@@ -319,14 +325,19 @@ void WRStatsMenu::onOverall(CCObject*) {
         StatsString += "\n";
 
 
-        StatsString += "Time for 100%: " + formatTime(timeFor100);
+        if (toX>=0) {
+            StatsString += "Time for "+ fmt::to_string(toX) +"%: " 
+            + formatTime(timeForX);
+        } else {
+            StatsString += "Time for 100%: " + formatTime(timeFor100);
+        }
 
         
         
 
     } else {
         StatsString += "Not enough data." 
-        "\nComplete every percentage in the level atleast once.";
+        "\nPlay the level to track data! You need to complete each entire percentage for them to show up in the stats.";
     }
 
     geode::createQuickPopup(
@@ -382,36 +393,6 @@ std::string WRStatsMenu::formatLargeNumbers(double number) {
     } else if (number<DECILLION) {
         number /= NONILLION;
         return fmt::format("{:.3g}",number) + " nonillion";
-    } else if (number<UNDECILLION) {
-        number /= DECILLION;
-        return fmt::format("{:.3g}",number) + " decillion";
-    } else if (number<DUODECILLION) {
-        number /= UNDECILLION;
-        return fmt::format("{:.3g}",number) + " undecillion";
-    } else if (number<TREDECILLION) {
-        number /= DUODECILLION;
-        return fmt::format("{:.3g}",number) + " duodecillion";
-    } else if (number<QUATTUORDECILLION) {
-        number /= TREDECILLION;
-        return fmt::format("{:.3g}",number) + " tredecillion";
-    } else if (number<QUINDECILLION) {
-        number /= QUATTUORDECILLION;
-        return fmt::format("{:.3g}",number) + " quattuordecillion";
-    } else if (number<SEXDECILLION) {
-        number /= QUINDECILLION;
-        return fmt::format("{:.3g}",number) + " quindecillion";
-    } else if (number<SEPTENDECILLION) {
-        number /= SEXDECILLION;
-        return fmt::format("{:.3g}",number) + " sexdecillion";
-    } else if (number<OCTODECILLION) {
-        number /= SEPTENDECILLION;
-        return fmt::format("{:.3g}",number) + " septendecillion";
-    } else if (number<NOVEMDECILLION) {
-        number /= OCTODECILLION;
-        return fmt::format("{:.3g}",number) + " octodecillion";
-    } else if (number<VIGINTILLION) {
-        number /= NOVEMDECILLION;
-        return fmt::format("{:.3g}",number) + " novemdecillion";
     } else {
         return fmt::format("{:.3g}",number) ;
     }

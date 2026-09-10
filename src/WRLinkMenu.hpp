@@ -25,8 +25,8 @@ protected:
     void onLink(CCObject*);
     void onResetWinrate(CCObject*);
 
-    void linkPopup();
-    void linkPopup2();
+    void linkPopup1();
+    void linkPopup2(bool choice);
     void unlinkLevel(std::string level);
     void linkLevel(std::string levelKeep, std::string levelDicard);
 

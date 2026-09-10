@@ -133,7 +133,7 @@ void WRLinkMenu::onButtonLink(CCObject*) {
     if (m_isLinked) {
         unlinkPreviousPopup();
     } else {
-        linkPopup();
+        linkPopup1();
     }
     return;
 }
@@ -251,53 +251,56 @@ void WRLinkMenu::onResetWinrate(CCObject*) {
     return;
 }
 
-void WRLinkMenu::linkPopup() {
-        auto alert = geode::createQuickPopup(
-			"Link to previous level?",            // title
-			"Do you want to link the winrate of the levels \"" 
-            + this->m_nameCurrent + "\" and \"" 
-            + this->m_namePrevious +  "\"?\n",   // content
-			"Cancel", "Link",      // buttons
-			[this](auto, bool btn2) {
-				if (btn2) {
-                    this->linkPopup2();
-				}
-			}
-		);
+
+
+void WRLinkMenu::linkPopup1() {
+    const char* name1;
+    const char* name2;
+
+    // This is to distinguish levels with the same name 
+    if (this->m_nameCurrent==this->m_namePrevious) {
+        name1 = this->m_idCurrent.c_str();
+        name2 = this->m_idPrevious.c_str();
+    } else {
+        name1 = this->m_nameCurrent.c_str();
+        name2 = this->m_namePrevious.c_str();
     }
 
-void WRLinkMenu::linkPopup2() {
-        const char* name1;
-        const char* name2;
-
-        // This is to distinguish levels with the same name 
-        if (this->m_nameCurrent==this->m_namePrevious) {
-            name1 = this->m_idCurrent.c_str();
-            name2 = this->m_idPrevious.c_str();
-        } else {
-            name1 = this->m_nameCurrent.c_str();
-            name2 = this->m_namePrevious.c_str();
+    auto alert = geode::createQuickPopup(
+        "Choose Levels Winrate",            // title
+        "Choose which levels winrate you want to keep for both. \n\"" 
+        + this->m_nameCurrent + "\" (current)\n\"" 
+        + this->m_namePrevious + "\" (previous)\n",   // content
+        name1, name2,      // buttons
+        [this](auto, bool btn2) {
+            this->linkPopup2(btn2);
         }
+    );
+}
 
-        auto alert = geode::createQuickPopup(
-			"Choose Levels Winrate",            // title
-			"Choose which levels winrate you want to keep for both. \n\"" 
-            + this->m_nameCurrent + "\" (" + this->m_idCurrent + ")\n\"" 
-            + this->m_namePrevious + "\" (" 
-            + this->m_idPrevious + ")\n(Escape to exit)",   // content
-			name1, name2,      // buttons
-			[this](auto, bool btn2) {
-				if (btn2) {
+void WRLinkMenu::linkPopup2(bool choice) {
+    auto alert = geode::createQuickPopup(
+        "Confirm Choice?",            // title
+        "Do you want to link the winrate of the levels \"" 
+        + this->m_nameCurrent + "\" and \"" 
+        + this->m_namePrevious +  "\"?\nYou choose to use the winrate of " 
+        + (choice ? this->m_nameCurrent : this->m_namePrevious) 
+        + " for both levels.",   // content
+        "Cancel", "Link",      // buttons
+        [this,choice](auto, bool btn2) {
+            if (btn2) {
+                if (choice) {
                     this->linkLevel(this->m_idPrevious
-                    ,this->m_idCurrent);
-				} else {
+                    , this->m_idCurrent);
+                } else {
                     this->linkLevel(this->m_idCurrent
-                    ,this->m_idPrevious);
+                    , this->m_idPrevious);
                 }
                 this->m_isLinked = true;
-			}
-		);
-    }
+            }
+        }
+    );
+}
 
 void WRLinkMenu::unlinkLevel(std::string level) {
     auto oldLinked 
@@ -316,6 +319,7 @@ void WRLinkMenu::unlinkLevel(std::string level) {
 
 
 void WRLinkMenu::linkLevel(std::string levelKeep, std::string levelDicard) {
+    // log::info("trying to link {} with {}",levelKeep,levelDicard);
     auto dataLevelKeep 
     = Mod::get()->getSavedValue<std::set<std::string>>(levelKeep + "-linked");
     dataLevelKeep.insert(levelKeep);

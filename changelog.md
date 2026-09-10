@@ -1,3 +1,11 @@
+# 1.0.4
+- Added a setting and keybind to pause tracking of winrate
+- Made it more clear when tracking is paused or if you died during the safe zone
+- Removed potential softlock when linking levels by changing the order of popups.
+- Fixed potential collision between editor ids and level ids.
+- Patched bugged resets during the completion animation using the reset keybind.
+- Opted against using numToAbbreviatedString since it doesn't handle large enough numbers, but I also reduced the maximum large number to a NONILLION.
+
 # 1.0.3
 - Fixed visual bug when dying after using the "Reset and record run"-keybind.
 

@@ -2,6 +2,7 @@
 #include <Geode/modify/PlayLayer.hpp>
 #include <cvolton.level-id-api/include/EditorIDs.hpp>
 #include <Geode/utils/random.hpp>
+#include <Geode/utils/general.hpp>
 #include "constants.cpp"
 
 
@@ -91,7 +92,7 @@ class $modify(WRPlayLayer, PlayLayer){
 			, bool repeat, double timestamp) {
 
                 if (down && !repeat) {
-                    Mod::get()->setSettingValue("winrate-tracking-bool"
+                    Mod::get()->setSettingValue<bool>("winrate-tracking-bool"
 						,!Mod::get()->getSettingValue<bool>
 						("winrate-tracking-bool"));
                 }
@@ -110,13 +111,15 @@ class $modify(WRPlayLayer, PlayLayer){
 			m_fields->m_percentageTimeLength[i] = -1;
 		}
 
+		std::string levelId;
+
 		int ourLevelId = level->m_levelID.value();
 		if (!ourLevelId) {
 			ourLevelId = EditorIDs::getID(level);
+			levelId = "editor-" + fmt::to_string(ourLevelId);
+		} else {
+			levelId = fmt::to_string(ourLevelId);
 		}
-
-		std::string levelId = fmt::to_string(ourLevelId);
-
 		// Saving the levelID to use when saving the data later
 
 		m_fields->m_percentageWinrate 
@@ -294,7 +297,7 @@ class $modify(WRPlayLayer, PlayLayer){
 		int lastIndexWinrate 
 		= lastElementWithZeroData-m_fields->m_percentageDataCount.begin()+1;
 
-		m_fields->m_currentWinrate = calculateWinrate(0, lastIndexWinrate);
+		m_fields->m_currentWinrate = calculateWinrate(0, 100);
 
 		auto lastValidIterator 
 		= std::find(m_fields->m_percentageTimeLength.begin(),
@@ -466,41 +469,9 @@ class $modify(WRPlayLayer, PlayLayer){
 		} else if (number<DECILLION) {
 			number /= NONILLION;
 			return fmt::format("{:.3g}",number) + " nonillion";
-		} else if (number<UNDECILLION) {
-			number /= DECILLION;
-			return fmt::format("{:.3g}",number) + " decillion";
-		} else if (number<DUODECILLION) {
-			number /= UNDECILLION;
-			return fmt::format("{:.3g}",number) + " undecillion";
-		} else if (number<TREDECILLION) {
-			number /= DUODECILLION;
-			return fmt::format("{:.3g}",number) + " duodecillion";
-		} else if (number<QUATTUORDECILLION) {
-			number /= TREDECILLION;
-			return fmt::format("{:.3g}",number) + " tredecillion";
-		} else if (number<QUINDECILLION) {
-			number /= QUATTUORDECILLION;
-			return fmt::format("{:.3g}",number) + " quattuordecillion";
-		} else if (number<SEXDECILLION) {
-			number /= QUINDECILLION;
-			return fmt::format("{:.3g}",number) + " quindecillion";
-		} else if (number<SEPTENDECILLION) {
-			number /= SEXDECILLION;
-			return fmt::format("{:.3g}",number) + " sexdecillion";
-		} else if (number<OCTODECILLION) {
-			number /= SEPTENDECILLION;
-			return fmt::format("{:.3g}",number) + " septendecillion";
-		} else if (number<NOVEMDECILLION) {
-			number /= OCTODECILLION;
-			return fmt::format("{:.3g}",number) + " octodecillion";
-		} else if (number<VIGINTILLION) {
-			number /= NOVEMDECILLION;
-			return fmt::format("{:.3g}",number) + " novemdecillion";
 		} else {
 			return fmt::format("{:.3g}",number) ;
 		}
-		
-		
 
 		return "";
 	}
@@ -688,10 +659,8 @@ class $modify(WRPlayLayer, PlayLayer){
 		= std::find(m_fields->m_percentageDataCount.begin()
 		,m_fields->m_percentageDataCount.end(),0);
 
-		int lastIndexWinrate 
-		= lastElementWithZeroData-m_fields->m_percentageDataCount.begin()+1;
 
-		double newWinrate = calculateWinrate(0, lastIndexWinrate);
+		double newWinrate = calculateWinrate(0, 100);
 
 		// Calculating the new completion time
 		auto lastValidIterator 
@@ -824,20 +793,3 @@ class $modify(WRPlayLayer, PlayLayer){
 			}
 	}
 };
-
-// $on_game(Loaded) {
-//     listenForKeybindSettingPresses("keybind-reset-and-record", [](Keybind const& keybind, bool down, bool repeat, double timestamp) {
-//         if (down && !repeat) {
-// 			if (!PlayLayer::get()) return;
-// 			auto pl = static_cast<WRPlayLayer*>(PlayLayer::get());
-
-// 			int startPercentage 
-// 			= (pl->m_fields->m_startingPercentage==0.0) ? 
-// 			0 : pl->m_fields->m_endOfSafeZone;
-
-// 			pl->updateWinrate(startPercentage,pl->getCurrentPercentInt(),true);
-
-// 			pl->resetLevel();
-//         }
-//     });
-// }

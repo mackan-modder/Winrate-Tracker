@@ -8,9 +8,9 @@
 	},
 	"id": "mackan.winrate-tracker",
 	"name": "Winrate Tracker",
-	"version": "v1.0.3",
+	"version": "v1.0.4",
 	"developer": "Mackan",
-	"description": "Winrate tracking using a EMA algorithm",
+	"description": "Winrate tracking using a recent runs",
     "tags":["gameplay","offline","interface","utility"],
     "links": {
         "source": "https://github.com/mackan-modder/Winrate-Tracker"
@@ -27,12 +27,21 @@
             "name": "Pause Winrate Tracking",
             "type": "bool",
             "default": false
+        },"title-keybinds": {
+            "type": "title",
+            "name": "Keybinds"
         },"keybind-tracking": {
             "type": "keybind",
             "name": "Toggle Winrate Tracking",
-            "default": ["P"],
+            "default": [","],
             "category": "gameplay",
             "description": "This keybind toggles winrate tracking."
+        },"keybind-reset-and-record": {
+            "type": "keybind",
+            "name": "Reset and record run",
+            "default": ["-"],
+            "category": "gameplay",
+            "description": "This keybind allows you to reset while still keeping the increased winrate from passing parts in your run. Used to practice a part over and over without having to die or complete the level. Does not increase attempt count."
         },"title-enable": {
             "type": "title",
             "name": "Enable Labels",
@@ -56,15 +65,6 @@
             "name": "Enable Run Rarity",
             "type": "bool",
             "default": true
-        },"title-keybinds": {
-            "type": "title",
-            "name": "Keybinds"
-        },"keybind-reset-and-record": {
-            "type": "keybind",
-            "name": "Reset and record run",
-            "default": ["-"],
-            "category": "gameplay",
-            "description": "This keybind allows you to reset while still keeping the increased winrate from passing parts in your run. Used to practice a part over and over without having to die or complete the level. Does not increase attempt count."
         },"title-labels": {
             "type": "title",
             "name": "Text Settings",
@@ -111,14 +111,14 @@
         },
         "settings-alpha": {
             "name": "Alpha value",
-            "description": "Alpha determines how fast your winrate changes. A lower alpha results in a slower but more stable rate. A higher Alpha results in faster changes but is less stable. I would not recommend going much higher than the default 0.15 but you could potentially decrease it if you are playing levels longterm.",
+            "description": "Alpha determines much of your winrate at a percentage depends on your lastest attempt there. A lower alpha results in a slower but more stable rate. A higher Alpha results in faster changes but is less stable and less accurate.",
             "type": "float",
-            "default": 0.15,
+            "default": 0.1,
             "min": 0.001,
             "max": 0.5,
             "control": {
-                "arrows": false,
-                "slider": true,
+                "arrows": true,
+                "slider": false,
                 "slider-step": 0.01
             }
         },
