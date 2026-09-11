@@ -512,8 +512,11 @@ class $modify(WRPlayLayer, PlayLayer){
 		auto lastElementWithZeroData 
 		= std::find(m_fields->m_percentageDataCount.begin(),
 		m_fields->m_percentageDataCount.end(),0);
-		int lastIndex 
-		= lastElementWithZeroData-m_fields->m_percentageDataCount.begin();
+		
+		// int lastIndex 
+		// = lastElementWithZeroData-m_fields->m_percentageDataCount.begin();
+
+		int lastIndex = 100;
 		if (m_fields->m_winrateLabel) {
 			m_fields->m_winrateLabel->setString(
 			(assembleWinrateText(getCurrentPercentInt()
@@ -636,9 +639,6 @@ class $modify(WRPlayLayer, PlayLayer){
 		= std::find(m_fields->m_percentageDataCount.begin()
 		,m_fields->m_percentageDataCount.end(),0);
 
-		int lastIndex 
-		= lastElementWithZeroData-m_fields->m_percentageDataCount.begin();
-
 		if (m_fields->m_completionTimeLabel){
 			m_fields->m_completionTimeLabelString = assembleCompletionTimeText();
 			m_fields->m_completionTimeLabel
@@ -646,7 +646,7 @@ class $modify(WRPlayLayer, PlayLayer){
 		}
 
 		if (m_fields->m_winrateLabelFlat){
-			m_fields->m_winrateLabelFlatString = assembleWinrateText(0,lastIndex,false);
+			m_fields->m_winrateLabelFlatString = assembleWinrateText(0,100,false);
 			m_fields->m_winrateLabelFlat->setString(m_fields->m_winrateLabelFlatString.c_str());
 		}
 

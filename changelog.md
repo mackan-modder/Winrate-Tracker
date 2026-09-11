@@ -1,3 +1,8 @@
+# 1.0.42
+- Adjusted default size and opacity for labels for mobile players
+- Changed so "Run Rarity" isn't turned on by default
+- Removed my system for hiding winrate until each percentage has been shown once. I realised this makes it very confusing for new users and is a bit janky with practice mode for easy levels. It's better if players just know that the default winrate is 100% and it'll adjust itself from there.
+
 # 1.0.41
 - Updated about.md and moved down the link to my youtube
 

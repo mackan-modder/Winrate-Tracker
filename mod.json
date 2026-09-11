@@ -8,7 +8,7 @@
 	},
 	"id": "mackan.winrate-tracker",
 	"name": "Winrate Tracker",
-	"version": "v1.0.41",
+	"version": "v1.0.42",
 	"developer": "Mackan",
 	"description": "Winrate tracking using a recent runs",
     "tags":["gameplay","offline","interface","utility"],
@@ -64,7 +64,7 @@
         "rarity-label": {
             "name": "Enable Run Rarity",
             "type": "bool",
-            "default": true
+            "default": false
         },"title-labels": {
             "type": "title",
             "name": "Text Settings",
@@ -79,7 +79,7 @@
             "name": "Label Opacity",
             "description": "Changes the opacity of the labels",
             "type": "float",
-            "default": 0.4,
+            "default": 0.6,
             "min": 0,
             "max": 1,
             "control": {
@@ -90,7 +90,7 @@
             "name": "Label Size",
             "description": "Changes the size of the labels",
             "type": "float",
-            "default": 1,
+            "default": 1.2,
             "min": 0.2,
             "max": 2,
             "control": {

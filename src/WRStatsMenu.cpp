@@ -114,25 +114,34 @@ void WRStatsMenu::onImpact(CCObject*) {
     times = Mod::get()->getSavedValue<std::array<float,100>>(
     m_idCurrent+"-timelength", times);
 
-    std::string levelsString = "Possible \"Time for 100\%\" to remove:\n";
+    std::string levelsString = "";
 
+    auto lastValidIterator 
+    = std::find(times.begin()
+    ,times.end(),-1);
 
-    if (std::find(times.begin(), times.end(), -1) != times.end()) {
+    int lastIndex = lastValidIterator-times.begin();
 
-        levelsString += "Finish the level to get this metric!";
+    // if (std::find(times.begin(), times.end(), -1) != times.end()) {
 
-        FLAlertLayer::create(
-        "Level Stats",    // title
-        levelsString,  // content
-        "OK"        // button
-        )->show();
+    //     levelsString += "(Finish each individual percentage to calculate. You have not completed " + fmt::to_string(lastIndex) + "%)\n";
 
-        return;
-    }
+    //     // FLAlertLayer::create(
+    //     // "Level Stats",    // title
+    //     // levelsString,  // content
+    //     // "OK"        // button
+    //     // )->show();
+
+    //     // return;
+    // }
+
+    levelsString += "Possible \"Time for 100\%\" to remove:\n";
+
+    
 
     double expectedTimeNormal = 1; // We assume respawn time is 1 second
 
-    for (int i=0;i<100;i++) {
+    for (int i=0;i<lastIndex;i++) {
         expectedTimeNormal = (static_cast<double>(times[i])+expectedTimeNormal)
         /std::max({static_cast<double>(winrate[i]),LOWERLIMIT});
     }
@@ -143,7 +152,11 @@ void WRStatsMenu::onImpact(CCObject*) {
     for (int i = 0;i<10;i++) {
         levelsString += fmt::to_string(i*10) 
         + "%-" + fmt::to_string(i*10+10) + "%: ";
-        
+
+        if(lastIndex<(i+1)*10) {
+            levelsString += "-\n";
+            continue;
+        }
         
         double expectedTimeChanged = 1; // We assume respawn time is 1 second
 
@@ -211,7 +224,7 @@ void WRStatsMenu::onPass(CCObject*) {
             if (dataCount[i*10+j]==0) noData = true;
         }
         if (noData) {
-            levelsString += "-\n";
+            levelsString += "100% (default)\n";
             continue;
         }
 
@@ -287,7 +300,6 @@ void WRStatsMenu::onOverall(CCObject*) {
     double timeForX = -1;
     int toX = -1;
     bool hasData = true; 
-    if (dataCount[0]==0 || times[0]==-1) hasData = false;
     for (int i = 0;i<100;i++) {
         totalwinrate *= winrate[i];
         if (times[i] == -1 && toX < 0) {
@@ -300,44 +312,35 @@ void WRStatsMenu::onOverall(CCObject*) {
 
     std::string StatsString = "";
 
-    if (hasData) {
-        time_t timestamp = time(nullptr);
-        tm tm = geode::localtime(timestamp);
-        StatsString += fmt::to_string(tm.tm_year+1900) + "-";
-        if (tm.tm_mon<10) StatsString += "0";
-        StatsString += fmt::to_string(tm.tm_mon) + "-"; 
-        if (tm.tm_mday<10) StatsString += "0";
-        StatsString += fmt::to_string(tm.tm_mday) + " ";
-        if (tm.tm_hour<10) StatsString += "0";
-        StatsString += fmt::to_string(tm.tm_hour) + ":"; 
-        if (tm.tm_min<10) StatsString += "0";
-        StatsString += fmt::to_string(tm.tm_min) + "\n";
+    time_t timestamp = time(nullptr);
+    tm tm = geode::localtime(timestamp);
+    StatsString += fmt::to_string(tm.tm_year+1900) + "-";
+    if (tm.tm_mon<10) StatsString += "0";
+    StatsString += fmt::to_string(tm.tm_mon) + "-"; 
+    if (tm.tm_mday<10) StatsString += "0";
+    StatsString += fmt::to_string(tm.tm_mday) + " ";
+    if (tm.tm_hour<10) StatsString += "0";
+    StatsString += fmt::to_string(tm.tm_hour) + ":"; 
+    if (tm.tm_min<10) StatsString += "0";
+    StatsString += fmt::to_string(tm.tm_min) + "\n";
 
-        StatsString += fmt::to_string(totalAttempts) + " attempts\n";
+    StatsString += fmt::to_string(totalAttempts) + " attempts\n";
 
-        StatsString += "Winrate: ";
+    StatsString += "Winrate: ";
 
-        if (totalwinrate<0.01 && totalwinrate!=0) {
-            StatsString += "1 in " + formatLargeNumbers(1/totalwinrate);
-        } else {
-            StatsString += fmt::format("{:.1f}",totalwinrate*100) + "%";
-        }
-        StatsString += "\n";
-
-
-        if (toX>=0) {
-            StatsString += "Time for "+ fmt::to_string(toX) +"%: " 
-            + formatTime(timeForX);
-        } else {
-            StatsString += "Time for 100%: " + formatTime(timeFor100);
-        }
-
-        
-        
-
+    if (totalwinrate<0.01 && totalwinrate!=0) {
+        StatsString += "1 in " + formatLargeNumbers(1/totalwinrate);
     } else {
-        StatsString += "Not enough data." 
-        "\nPlay the level to track data! You need to complete each entire percentage for them to show up in the stats.";
+        StatsString += fmt::format("{:.1f}",totalwinrate*100) + "%";
+    }
+    StatsString += "\n";
+
+
+    if (toX>=0) {
+        StatsString += "Time for "+ fmt::to_string(toX) +"%: " 
+        + formatTime(timeForX);
+    } else {
+        StatsString += "Time for 100%: " + formatTime(timeFor100);
     }
 
     geode::createQuickPopup(
