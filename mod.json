@@ -8,7 +8,7 @@
 	},
 	"id": "mackan.winrate-tracker",
 	"name": "Winrate Tracker",
-	"version": "v1.0.42",
+	"version": "v1.0.43",
 	"developer": "Mackan",
 	"description": "Winrate tracking using a recent runs",
     "tags":["gameplay","offline","interface","utility"],

@@ -396,8 +396,6 @@ class $modify(WRPlayLayer, PlayLayer){
 		auto lastElementWithZeroData 
 		= std::find(m_fields->m_percentageDataCount.begin(),
 		m_fields->m_percentageDataCount.end(),0);
-		int lastIndex 
-		= lastElementWithZeroData-m_fields->m_percentageDataCount.begin();
 
 		double interpolation 
 		= (static_cast<double>(getCurrentPercent()) 
@@ -405,8 +403,8 @@ class $modify(WRPlayLayer, PlayLayer){
 
 		double interpolatedWinrate 
 		= calculateWinrate( 
-		getCurrentPercentInt(), lastIndex+1)*(1.0-interpolation)
-		+ calculateWinrate( getCurrentPercentInt()+1, lastIndex+1)
+		getCurrentPercentInt(), 100)*(1.0-interpolation)
+		+ calculateWinrate( getCurrentPercentInt()+1, 100)
 		*interpolation;
 
 		m_fields->m_currentWinrateStartpos = interpolatedWinrate;
