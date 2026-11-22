@@ -1,5 +1,5 @@
 #include <Geode/modify/EditLevelLayer.hpp>
-#include <cvolton.level-id-api/include/EditorIDs.hpp>
+#include <cvolton.level-id-api/EditorIDs.hpp>
 #include <Geode/ui/BasedButtonSprite.hpp>
 #include "WRMenu.hpp"
 

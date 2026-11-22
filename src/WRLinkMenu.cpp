@@ -3,9 +3,6 @@
 using namespace geode::prelude;
 
 
-
-
-
 bool WRLinkMenu::init() {
 
     if (!Popup::init(250,130)) {

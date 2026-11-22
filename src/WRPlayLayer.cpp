@@ -1,6 +1,5 @@
-
 #include <Geode/modify/PlayLayer.hpp>
-#include <cvolton.level-id-api/include/EditorIDs.hpp>
+#include <cvolton.level-id-api/EditorIDs.hpp>
 #include <Geode/utils/random.hpp>
 #include <Geode/utils/general.hpp>
 #include "constants.cpp"
@@ -29,11 +28,11 @@ class $modify(WRPlayLayer, PlayLayer){
 		int m_endOfSafeZone = -1;
 		double m_safeZoneDuration = 1.2;
 		CCNodeRGBA* m_parentContainer = nullptr;
-		CCLabelBMFont* m_winrateLabel = nullptr;
-		CCLabelBMFont* m_rarityLabel = nullptr;
-		CCLabelBMFont* m_winrateLabelFlat = nullptr;
+		Label* m_winrateLabel = nullptr;
+		Label* m_rarityLabel = nullptr;
+		Label* m_winrateLabelFlat = nullptr;
 		std::string m_winrateLabelFlatString;
-		CCLabelBMFont* m_completionTimeLabel = nullptr;
+		Label* m_completionTimeLabel = nullptr;
 		std::string m_completionTimeLabelString;
 
 		~Fields() {
@@ -58,11 +57,12 @@ class $modify(WRPlayLayer, PlayLayer){
         }
 	};
 
-	bool init(GJGameLevel* level, bool useReplay, bool dontCreateObjects) {
-		if (!PlayLayer::init(level, useReplay, dontCreateObjects)) return false;
+
+	bool init(GJGameLevel* level, bool dontCreateObjects) {
+		if (!PlayLayer::init(level, dontCreateObjects)) return false;
 
         // log::info("init()");
-
+		
 		this->addEventListener(
             KeybindSettingPressedEventV3(Mod::get()
 			, "keybind-reset-and-record"),
@@ -120,8 +120,8 @@ class $modify(WRPlayLayer, PlayLayer){
 		} else {
 			levelId = fmt::to_string(ourLevelId);
 		}
-		// Saving the levelID to use when saving the data later
 
+		// Saving the levelID to use when saving the data later
 		m_fields->m_percentageWinrate 
 		= Mod::get()->getSavedValue<std::array<float,100>>(
 		levelId + "-winrate", m_fields->m_percentageWinrate);
@@ -238,7 +238,7 @@ class $modify(WRPlayLayer, PlayLayer){
 		|| Mod::get()->getSettingValue<bool>("settings-platformer")) {
 			if (Mod::get()->getSettingValue<bool>("winrate-dynamic")) {
 				m_fields->m_winrateLabel 
-				= CCLabelBMFont::create("Winrate Now is TEST"
+				= Label::create("Winrate Now is TEST"
 				, "bigFont.fnt");
 
 				m_fields->m_parentContainer
@@ -250,7 +250,7 @@ class $modify(WRPlayLayer, PlayLayer){
 			}
 			if (Mod::get()->getSettingValue<bool>("winrate-flat")) {
 				m_fields->m_winrateLabelFlat 
-				= CCLabelBMFont::create("Winrate is TEST"
+				= Label::create("Winrate is TEST"
 				, "bigFont.fnt");
 
 				m_fields->m_parentContainer
@@ -262,7 +262,7 @@ class $modify(WRPlayLayer, PlayLayer){
 			}
 			if (Mod::get()->getSettingValue<bool>("completion-time")) {
 				m_fields->m_completionTimeLabel 
-				= CCLabelBMFont::create("Time from 0 to 100 is TEST"
+				= Label::create("Time from 0 to 100 is TEST"
 				, "bigFont.fnt");
 
 				m_fields->m_parentContainer
@@ -272,7 +272,7 @@ class $modify(WRPlayLayer, PlayLayer){
 			}
 			if (Mod::get()->getSettingValue<bool>("rarity-label")) {
 				m_fields->m_rarityLabel 
-				= CCLabelBMFont::create("Run Rarity is TEST"
+				= Label::create("Run Rarity is TEST"
 				, "bigFont.fnt");
 
 				m_fields->m_parentContainer

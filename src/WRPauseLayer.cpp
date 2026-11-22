@@ -7,13 +7,6 @@
 
 using namespace geode::prelude;
 
-
-// class $modify(PTPauseLayer, PauseLayer) {
-// 	struct Fields {
-//         CCMenuItemSpriteExtra* m_buttonStats = nullptr;
-//     };
-// };
-
 class $modify(WRPauseLayer,PauseLayer) {
     struct Fields {
         CCMenuItemSpriteExtra* m_buttonStats = nullptr;
@@ -39,7 +32,7 @@ class $modify(WRPauseLayer,PauseLayer) {
         m_fields->m_buttonStats->setZOrder(1);
         m_fields->m_buttonStats->setVisible(true);
 
-        auto leftMenu = this->getChildByID("left-button-menu");
+        auto leftMenu = m_layer->getChildByID("left-button-menu");
         leftMenu->addChild(m_fields->m_buttonStats);
         leftMenu->updateLayout();
 

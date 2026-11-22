@@ -1,14 +1,14 @@
 {
-	"geode": "5.6.1",
+	"geode": "6.0.0-beta.1",
 	"gd": {
-		"win": "2.2081",
-		"android": "2.2081",
-		"mac": "2.2081",
-		"ios": "2.2081"
+		"win": "2.2091",
+		"android": "2.2091",
+		"mac": "2.2091",
+		"ios": "2.2091"
 	},
 	"id": "mackan.winrate-tracker",
 	"name": "Winrate Tracker",
-	"version": "v1.0.43",
+	"version": "v1.0.44",
 	"developer": "Mackan",
 	"description": "Winrate tracking using a recent runs",
     "tags":["gameplay","offline","interface","utility"],
@@ -16,8 +16,8 @@
         "source": "https://github.com/mackan-modder/Winrate-Tracker"
     },
 	"dependencies": {
-		"geode.node-ids": ">=v1.23.3",
-		"cvolton.level-id-api": ">=2.0.0"
+		"geode.node-ids": ">=v1.24.0-beta.1",
+		"cvolton.level-id-api": ">=2.1.0"
 	},"settings": {
         "title-tracking": {
             "type": "title",

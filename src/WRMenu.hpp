@@ -1,7 +1,3 @@
-
-
-
-
 using namespace geode::prelude;
 
 class WRMenu : public geode::Popup {
