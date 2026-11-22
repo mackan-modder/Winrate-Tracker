@@ -326,6 +326,9 @@ class $modify(WRPlayLayer, PlayLayer){
 	}
 
 	void levelComplete() {
+		PlayLayer::levelComplete();
+
+
 		int startPercentage 
 		= (m_fields->m_startingPercentage==0.0) ? 0 : m_fields->m_endOfSafeZone;
 
@@ -337,15 +340,44 @@ class $modify(WRPlayLayer, PlayLayer){
 		}
 
 		updateChange();
+	}
 
-		PlayLayer::levelComplete();
+	void startGame() {
+		
+		PlayLayer::startGame();
+	}
+
+	void destroyPlayer(PlayerObject* player, GameObject* object) {
+		PlayLayer::destroyPlayer(player, object);
+
+		
+		// geode::log::debug("INFORMATION TO USE {},{}", m_attemptTime,player->m_isDead);
+		if (!player->m_isDead) return;
+
+
+		int startPercentage 
+        = (m_fields->m_startingPercentage==0.0) ? 
+        0 : m_fields->m_endOfSafeZone;
+
+        bool isPaused 
+		= Mod::get()->getSettingValue<bool>("winrate-tracking-bool");
+
+        if (!isPaused) {
+            updateWinrate
+            (startPercentage,getCurrentPercentInt(),false);
+			log::info("Adjusting winrate!!");
+        }
+
+        updateChange();
+		
 	}
 	
 	void resetLevel() {	
 
-		// log::info("resetLevel()");
+		log::info("resetLevel()");
 
 		PlayLayer::resetLevel();
+
 
 		if (m_fields->m_measuringTimeLength) {
 			m_fields->m_measuringTimeLength = false;
@@ -475,7 +507,7 @@ class $modify(WRPlayLayer, PlayLayer){
 	}
 
 	void updateWinrate(int start, int end, bool passed) {
-        //log::info("updateWinrate({},{})",start,end);
+        // log::info("updateWinrate({},{},{})",start,end,passed);
 
 		if (start==-1 || (end<start)) {
 			// log::info("SafeZoned!");
