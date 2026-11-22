@@ -62,6 +62,8 @@ class $modify(WRPlayLayer, PlayLayer){
 		if (!PlayLayer::init(level, dontCreateObjects)) return false;
 
         // log::info("init()");
+
+		#ifndef GEODE_IS_IOS
 		
 		this->addEventListener(
             KeybindSettingPressedEventV3(Mod::get()
@@ -84,6 +86,8 @@ class $modify(WRPlayLayer, PlayLayer){
                 }
             }
         );
+
+		#endif
 
 		this->addEventListener(
             KeybindSettingPressedEventV3(Mod::get()

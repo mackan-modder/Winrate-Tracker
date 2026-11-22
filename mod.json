@@ -126,7 +126,8 @@
             "name": "Safezone Duration (seconds)",
             "description": "Changes the duration of the safezone. The safezone is activated whenever you play from a startpos or checkpoint and prevents winrate changes within the safezone. The point is that when respawning to a startposition, you will often die in ways you don't from 0.",
             "type": "float",
-            "default": 1.2
+            "default": 1.2,
+            "min": 0
         },
         "settings-platformer": {
             "name": "Enable on Platformer Mode",
