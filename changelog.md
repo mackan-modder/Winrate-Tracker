@@ -1,3 +1,7 @@
+# 1.0.44
+- New Logo
+- Ported to 2.2091
+
 # 1.0.43
 - Fixed a bug that caused "Run Rarity" to break on startpos copies.
 
