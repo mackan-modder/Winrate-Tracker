@@ -2,31 +2,24 @@
 #include "WRPlayLayer.cpp"
 
 class $modify(WRPlayerObject, PlayerObject){
-
     void playerDestroyed(bool noEffects) {
-        if (!PlayLayer::get()) return;
+        // if (!PlayLayer::get()) return;
 
-        // log::info("playerDestroyed()");
+        // auto pl = static_cast<WRPlayLayer*>(PlayLayer::get());
 
-        auto pl = static_cast<WRPlayLayer*>(PlayLayer::get());
+        // int startPercentage 
+        // = (pl->m_fields->m_startingPercentage==0.0) ? 
+        // 0 : pl->m_fields->m_endOfSafeZone;
 
-        int startPercentage 
-        = (pl->m_fields->m_startingPercentage==0.0) ? 
-        0 : pl->m_fields->m_endOfSafeZone;
+        // bool isPaused 
+		// = Mod::get()->getSettingValue<bool>("winrate-tracking-bool");
 
-        // log::info("destroyed {} {}",pl->m_fields->m_startingPercentage 
-        // ,pl->m_fields->m_endOfSafeZone);
+        // if (!isPaused) {
+        //     pl->updateWinrate
+        //     (startPercentage,pl->getCurrentPercentInt(),false);
+        // }
 
-        bool isPaused 
-		= Mod::get()->getSettingValue<bool>("winrate-tracking-bool");
-
-        if (!isPaused) {
-            pl->updateWinrate
-            (startPercentage,pl->getCurrentPercentInt(),false);
-        }
-
-        pl->updateChange();
+        // pl->updateChange();
         PlayerObject::playerDestroyed(noEffects);
     }
 };
-
